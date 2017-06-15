@@ -70,7 +70,7 @@
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Phaser"] = __webpack_require__(12);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Phaser"] = __webpack_require__(13);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -105,9 +105,9 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Game__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Boot__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Preload__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Game__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Boot__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Preload__ = __webpack_require__(11);
 
 
 
@@ -124,14 +124,14 @@ StateObj.Preload = __WEBPACK_IMPORTED_MODULE_2__Preload__["a" /* default */];
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(13);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(14);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(11);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(12);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -198,15 +198,47 @@ Slime.prototype.physicsEnable = game => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
+var _this = this;
+
+
+
+let PlatformMedium = function (game, x, y, key) {
+  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
+  game.physics.arcade.enable(this);
+  this.collideWorldBounds = true;
+  this.body.collideWorldBounds = true;
+  this.body.immovable = true;
+  this.body.moves = false;
+};
+
+PlatformMedium.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
+PlatformMedium.prototype.constructor = PlatformMedium;
+
+PlatformMedium.prototype.physicsEnable = () => {
+  _this.body.immovable = false;
+  _this.body.moves = true;
+};
+
+/* unused harmony default export */ var _unused_webpack_default_export = ({
+  PlatformMedium: PlatformMedium
+});
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Enemy__ = __webpack_require__(6);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__Enemy__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Platform__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Platform__ = __webpack_require__(7);
 /* unused harmony reexport platformObj */
 
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -218,6 +250,7 @@ Slime.prototype.physicsEnable = game => {
   init: function () {
     //loading screen will have a white background
     this.game.stage.backgroundColor = '#fff';
+    this.game.time.advancedTiming = true;
 
     //scaling options
     this.scale.scaleMode = __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.ScaleManager.SHOW_ALL;
@@ -239,11 +272,11 @@ Slime.prototype.physicsEnable = game => {
 });
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__prefabs___ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__prefabs___ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_phaser__);
 
@@ -297,6 +330,9 @@ Slime.prototype.physicsEnable = game => {
   },
 
   update: function () {
+    console.log(this.game);
+    this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
+
     this.game.physics.arcade.collide(this.player, this.collisionLayer);
     this.game.physics.arcade.collide(this.enemyPool, this.collisionLayer);
     //this.game.physics.arcade.collide(this.enemy, this.player);
@@ -432,7 +468,7 @@ Slime.prototype.physicsEnable = game => {
 // }
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -474,7 +510,7 @@ Slime.prototype.physicsEnable = game => {
 });
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -14092,7 +14128,7 @@ World.prototype.raycast = function(result, ray){
 });
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {/**
@@ -94456,10 +94492,10 @@ PIXI.TextureSilentFail = true;
 * "What matters in this life is not what we do but what we do for others, the legacy we leave and the imprint we make." - Eric Meyer
 */
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -103585,7 +103621,7 @@ Object.defineProperty(PIXI.TilingSprite.prototype, 'height', {
 }).call(this);
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -103773,38 +103809,6 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-
-/***/ }),
-/* 15 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
-var _this = this;
-
-
-
-let PlatformMedium = function (game, x, y, key) {
-  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
-  game.physics.arcade.enable(this);
-  this.collideWorldBounds = true;
-  this.body.collideWorldBounds = true;
-  this.body.immovable = true;
-  this.body.moves = false;
-};
-
-PlatformMedium.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
-PlatformMedium.prototype.constructor = PlatformMedium;
-
-PlatformMedium.prototype.physicsEnable = () => {
-  _this.body.immovable = false;
-  _this.body.moves = true;
-};
-
-/* unused harmony default export */ var _unused_webpack_default_export = ({
-  PlatformMedium: PlatformMedium
-});
 
 /***/ })
 /******/ ]);

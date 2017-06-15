@@ -50,6 +50,9 @@ export default {
 
 
   update: function() {
+    console.log(this.game)
+    this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
+
     this.game.physics.arcade.collide(this.player, this.collisionLayer);
     this.game.physics.arcade.collide(this.enemyPool, this.collisionLayer);
     //this.game.physics.arcade.collide(this.enemy, this.player);

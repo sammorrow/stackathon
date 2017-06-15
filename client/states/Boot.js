@@ -4,6 +4,7 @@ export default {
   init: function() {
     //loading screen will have a white background
     this.game.stage.backgroundColor = '#fff';
+    this.game.time.advancedTiming = true;
 
     //scaling options
     this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
