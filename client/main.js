@@ -1,69 +1,89 @@
 import PIXI from '../node_modules/phaser/build/custom/pixi';
 import p2 from '../node_modules/phaser/build/custom/p2';
 import Phaser from 'phaser';
-
-(function(Phaser) {
-
-  var game = new Phaser.Game(
-    750, 500,
-    Phaser.AUTO,
-    'game',
-    {
-      preload: preload,
-      create: create,
-      update: update
-    }
-  )
+import { GameState } from './states';
 
 
-  let player;
+const GameState = {
+  init: function(){
+    this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    this.scale.pageAlignHorizontally = true;
+    this.scale.pageAlignVertically = true;
+    this.game.physics.startSystem(Phaser.Physics.ARCADE);
+    this.game.physics.arcade.gravity.y = 1000
+  },
 
-  let facing = 'left';
-  let hozMove = 160;
-  let vertMove = -120;
-  let jumpTimer = 0;
+  preload:  function(){
+    this.load.spritesheet('player', 'assets/images/vegeta.png', 49, 98)
 
-  function preload(){
-    game.load.spritesheet('player', 'assets/images/vegeta.png', 49, 98)
-  }
+    this.load.image('gameTiles', 'assets/images/phase-2.png')
+    this.load.tilemap('level', 'assets/levels/testmap-7.json', null, Phaser.TILED_JSON);
+  },
 
-  function create(){
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+  create:  function(){
+    this.map = this.add.tilemap('level');
+    //join the tile images to the json data
+    this.map.addTilesetImage('phase-2', 'gameTiles');
+        console.log(this.map)
 
-    game.stage.backgroundColor = '#FFFFFF';
+    this.collisionLayer = this.map.createLayer('level');
 
-    player = game.add.sprite(2 * 48, 6 * 48, 'player')
-    game.physics.enable(player);
-    player.body.gravity.y = 100;
-    player.body.collideWorldBounds = true;
 
-  }
-  function update(){
-    player.body.velocity.x = 0;
-    if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
+    // this.backgroundLayer = this.map.createLayer('backgroundLayer');
 
-      player.body.velocity.x = -hozMove;
+    this.player = this.add.sprite(2 * 48, 6 * 48, 'player')
+    this.player.anchor.setTo(0.5);
+    this.physics.arcade.enable(this.player);
+    this.player.body.collideWorldBounds = true;
+
+  },
+
+  update:  function(){
+
+    let facing = 'left';
+    let hozMove = 160;
+    let vertMove = -120;
+    let jumpTimer = 0;
+
+    this.player.body.velocity.x = 0;
+    if (this.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
+
+      this.player.body.velocity.x = -hozMove;
       if (facing !== 'left'){
         facing = 'left'
       }
-    } else if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
+    } else if (this.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
 
-      player.body.velocity.x = hozMove;
+      this.player.body.velocity.x = hozMove;
       if (facing !== 'right'){
         facing = 'right'
       }
     }
 
-    if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && player.body.onFloor() && game.time.now > jumpTimer){
-      player.body.velocity.y = vertMove;
-      jumpTimer = game.time.now + 650;
+    if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.player.body.onFloor() && this.time.now > jumpTimer){
+      this.player.body.velocity.y = vertMove;
+      jumpTimer = this.time.now + 650;
     }
 
     if (facing === 'left'){
-      player.frame = 0;
+      this.player.frame = 0;
     } else {
-      player.frame = 1;
+      this.player.frame = 1;
     }
   }
+}
 
-}(Phaser));
+const game = new Phaser.Game(750, 500, Phaser.AUTO);
+game.state.add('GameState', GameState);
+game.state.start('GameState');
+
+
+var ZPlat = ZPlat || {};
+
+ZPlat.game = new Phaser.Game(480, 360, Phaser.AUTO);
+
+ZPlat.game.state.add('Boot', ZPlat.BootState);
+ZPlat.game.state.add('Preload', ZPlat.PreloadState);
+ZPlat.game.state.add('Game', ZPlat.GameState);
+
+ZPlat.game.state.start('Boot');
