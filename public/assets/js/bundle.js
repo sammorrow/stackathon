@@ -266,7 +266,7 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     this.collisionLayer.resizeWorld();
 
     //create player
-    this.player = this.add.sprite(300, 0, 'player', 3);
+    this.player = this.add.sprite(300, 0, 'player', 0);
     this.player.anchor.setTo(0.5);
     this.player.animations.add('walking', [0, 1], 6, true);
     this.game.physics.arcade.enable(this.player);
@@ -356,7 +356,7 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     this.load.image('platform', 'assets/images/platform.png');
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
-    this.load.spritesheet('player', 'assets/images/vegeta.png', 49, 98);
+    this.load.spritesheet('player', 'assets/images/vegeta-small.png', 32, 64);
     this.load.spritesheet('fly', 'assets/images/fly_spritesheet.png', 35, 18, 2, 1, 2);
     this.load.image('arrowButton', 'assets/images/arrowButton.png');
     this.load.image('actionButton', 'assets/images/actionButton.png');
