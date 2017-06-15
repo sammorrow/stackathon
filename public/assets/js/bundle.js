@@ -70,7 +70,7 @@
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Phaser"] = __webpack_require__(10);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["Phaser"] = __webpack_require__(12);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -105,36 +105,33 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Game__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Boot__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Preload__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_phaser__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_phaser__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Game__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Boot__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Preload__ = __webpack_require__(10);
 
 
 
 
+let StateObj = {};
 
-var ZPlat = ZPlat || {};
+StateObj.Game = __WEBPACK_IMPORTED_MODULE_0__Game__["a" /* default */];
+StateObj.Boot = __WEBPACK_IMPORTED_MODULE_1__Boot__["a" /* default */];
+StateObj.Preload = __WEBPACK_IMPORTED_MODULE_2__Preload__["a" /* default */];
 
-ZPlat.Game = __WEBPACK_IMPORTED_MODULE_0__Game__["a" /* default */];
-ZPlat.Boot = __WEBPACK_IMPORTED_MODULE_1__Boot__["a" /* default */];
-ZPlat.Preload = __WEBPACK_IMPORTED_MODULE_2__Preload__["a" /* default */];
-
-/* harmony default export */ __webpack_exports__["a"] = (ZPlat);
+/* harmony default export */ __webpack_exports__["a"] = (StateObj);
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(11);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(13);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(9);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(11);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -155,16 +152,61 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-__WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game = new __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.Game(480, 360, __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.AUTO);
+let Platformer = {};
 
-__WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.add('Boot', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Boot);
-__WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.add('Preload', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Preload);
-__WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.add('Game', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Game);
+Platformer.game = new __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.Game(480, 360, __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.AUTO);
 
-__WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot');
+Platformer.game.state.add('Boot', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Boot);
+Platformer.game.state.add('Preload', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Preload);
+Platformer.game.state.add('Game', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Game);
+
+Platformer.game.state.start('Boot');
 
 /***/ }),
 /* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
+var _this = this;
+
+
+
+let Slime = function (game, x, y, key, health) {
+  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
+  this.animations.add('hit', [0, 1], 25, false);
+  this.health = health;
+  game.physics.arcade.enable(this);
+  this.body.bounce.x = 1;
+  this.body.velocity.x = 100;
+  this.body.collideWorldBounds = true;
+};
+
+Slime.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
+Slime.prototype.constructor = Slime;
+
+Slime.prototype.physicsEnable = game => {
+  _this.enableBody = true;
+  game.physics.arcade.enable(_this);
+};
+
+/* harmony default export */ __webpack_exports__["a"] = ({ Slime: Slime });
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Enemy__ = __webpack_require__(6);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__Enemy__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Platform__ = __webpack_require__(15);
+/* unused harmony reexport platformObj */
+
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -197,14 +239,35 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
 });
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__prefabs___ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_phaser__);
+
+
+
 /* harmony default export */ __webpack_exports__["a"] = ({
 
-  init: function () {
+  //custom methods
+  restart: function () {
+    this.game.state.start('Game');
+  },
 
+  gameOver: function () {
+    this.player.kill();
+    this.restart();
+  },
+
+  findObjectsByType: function (type, map, layer) {
+    return map.objects[layer].filter(el => {
+      return el.type == type;
+    });
+  },
+
+  init: function () {
     //constants
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
@@ -212,20 +275,38 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     //gravity
     this.game.physics.arcade.gravity.y = 1000;
 
+    //initialize groups
+
+    this.platformPool = this.add.group();
+    this.enemyPool = this.add.group();
+
     //cursor keys to move the player
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
   create: function () {
+
+    let self = this;
+    __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {
+      self.game.physics.arcade.collide(this, self.player);
+    };
     //load current level
     this.loadLevel();
 
     //show on-screen touch controls
     // this.createOnscreenControls();
   },
+
   update: function () {
     this.game.physics.arcade.collide(this.player, this.collisionLayer);
+    this.game.physics.arcade.collide(this.enemyPool, this.collisionLayer);
+    //this.game.physics.arcade.collide(this.enemy, this.player);
+    this.game.physics.arcade.collide(this.player, this.platform);
 
     this.player.body.velocity.x = 0;
+
+    if (this.player.top >= this.world.height - 48 || this.player.left <= 0) {
+      this.gameOver();
+    }
 
     if (this.cursors.left.isDown || this.player.customParams.isMovingLeft) {
       this.player.body.velocity.x = -this.RUNNING_SPEED;
@@ -247,7 +328,7 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
   },
   loadLevel: function () {
 
-    this.map = this.add.tilemap('level1');
+    this.map = this.add.tilemap('level-one');
 
     //join the tile images to the json data
     this.map.addTilesetImage('goodly-2x', 'gameTiles');
@@ -255,9 +336,11 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     //create layers
     this.backgroundLayer = this.map.createLayer('backgroundLayer');
     this.collisionLayer = this.map.createLayer('collisionLayer');
+    this.skyLayer = this.map.createLayer('skyLayer');
 
     //send background to the back
     this.game.world.sendToBack(this.backgroundLayer);
+    this.game.world.sendToBack(this.skyLayer);
 
     //collision layer should be collisionLayer
     this.map.setCollisionBetween(1, 160, true, 'collisionLayer');
@@ -266,75 +349,90 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     this.collisionLayer.resizeWorld();
 
     //create player
-    this.player = this.add.sprite(300, 0, 'player', 0);
+    let playerArr = this.findObjectsByType('player', this.map, 'objectLayer');
+    this.player = this.add.sprite(playerArr[0].x, playerArr[0].y, 'player', 0);
     this.player.anchor.setTo(0.5);
     this.player.animations.add('walking', [0, 1], 6, true);
     this.game.physics.arcade.enable(this.player);
     this.player.customParams = {};
     this.player.body.collideWorldBounds = true;
 
+    //add platforms
+    // this.platform = new platformObj.PlatformMedium(this.game, 400, 300, 'platform-medium')
+    // this.game.add.existing(this.platform)
+    //this.platform.physicsEnable(this.game)
+
+    //create enemy
+    let enemyArr = this.findObjectsByType('enemy', this.map, 'objectLayer');
+    enemyArr.forEach(el => {
+      let newFoe = new __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime(this.game, el.x, el.y, 'slime', 10);
+      this.game.add.existing(newFoe);
+      this.enemyPool.add(newFoe);
+    });
+
     //follow player with the camera
     this.game.camera.follow(this.player);
-  },
-  createOnscreenControls: function () {
-    this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
-    this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
-    this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
-
-    this.leftArrow.alpha = 0.5;
-    this.rightArrow.alpha = 0.5;
-    this.actionButton.alpha = 0.5;
-
-    this.leftArrow.fixedToCamera = true;
-    this.rightArrow.fixedToCamera = true;
-    this.actionButton.fixedToCamera = true;
-
-    this.actionButton.events.onInputDown.add(function () {
-      this.player.customParams.mustJump = true;
-    }, this);
-
-    this.actionButton.events.onInputUp.add(function () {
-      this.player.customParams.mustJump = false;
-    }, this);
-
-    //left
-    this.leftArrow.events.onInputDown.add(function () {
-      this.player.customParams.isMovingLeft = true;
-    }, this);
-
-    this.leftArrow.events.onInputUp.add(function () {
-      this.player.customParams.isMovingLeft = false;
-    }, this);
-
-    this.leftArrow.events.onInputOver.add(function () {
-      this.player.customParams.isMovingLeft = true;
-    }, this);
-
-    this.leftArrow.events.onInputOut.add(function () {
-      this.player.customParams.isMovingLeft = false;
-    }, this);
-
-    //right
-    this.rightArrow.events.onInputDown.add(function () {
-      this.player.customParams.isMovingRight = true;
-    }, this);
-
-    this.rightArrow.events.onInputUp.add(function () {
-      this.player.customParams.isMovingRight = false;
-    }, this);
-
-    this.rightArrow.events.onInputOver.add(function () {
-      this.player.customParams.isMovingRight = true;
-    }, this);
-
-    this.rightArrow.events.onInputOut.add(function () {
-      this.player.customParams.isMovingRight = false;
-    }, this);
   }
 });
 
+// createOnscreenControls: function(){
+//   this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
+//   this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
+//   this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
+
+//   this.leftArrow.alpha = 0.5;
+//   this.rightArrow.alpha = 0.5;
+//   this.actionButton.alpha = 0.5;
+
+//   this.leftArrow.fixedToCamera = true;
+//   this.rightArrow.fixedToCamera = true;
+//   this.actionButton.fixedToCamera = true;
+
+//   this.actionButton.events.onInputDown.add(function(){
+//     this.player.customParams.mustJump = true;
+//   }, this);
+
+//   this.actionButton.events.onInputUp.add(function(){
+//     this.player.customParams.mustJump = false;
+//   }, this);
+
+//   //left
+//   this.leftArrow.events.onInputDown.add(function(){
+//     this.player.customParams.isMovingLeft = true;
+//   }, this);
+
+//   this.leftArrow.events.onInputUp.add(function(){
+//     this.player.customParams.isMovingLeft = false;
+//   }, this);
+
+//   this.leftArrow.events.onInputOver.add(function(){
+//     this.player.customParams.isMovingLeft = true;
+//   }, this);
+
+//   this.leftArrow.events.onInputOut.add(function(){
+//     this.player.customParams.isMovingLeft = false;
+//   }, this);
+
+//   //right
+//   this.rightArrow.events.onInputDown.add(function(){
+//     this.player.customParams.isMovingRight = true;
+//   }, this);
+
+//   this.rightArrow.events.onInputUp.add(function(){
+//     this.player.customParams.isMovingRight = false;
+//   }, this);
+
+//   this.rightArrow.events.onInputOver.add(function(){
+//     this.player.customParams.isMovingRight = true;
+//   }, this);
+
+//   this.rightArrow.events.onInputOut.add(function(){
+//     this.player.customParams.isMovingRight = false;
+//   }, this);
+// }
+
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -356,6 +454,8 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
     this.load.image('platform', 'assets/images/platform.png');
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
+    this.load.image('platform-medium', 'assets/images/platform-medium.png');
+
     this.load.spritesheet('player', 'assets/images/vegeta-small.png', 32, 64);
     this.load.spritesheet('fly', 'assets/images/fly_spritesheet.png', 35, 18, 2, 1, 2);
     this.load.image('arrowButton', 'assets/images/arrowButton.png');
@@ -366,6 +466,7 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
 
     // this.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     this.load.tilemap('level1', 'assets/levels/testmap-5.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-one-obj.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
   },
   create: function () {
     this.state.start('Game');
@@ -373,7 +474,7 @@ __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].game.state.start('Boot'
 });
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -13991,7 +14092,7 @@ World.prototype.raycast = function(result, ray){
 });
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {/**
@@ -94355,10 +94456,10 @@ PIXI.TextureSilentFail = true;
 * "What matters in this life is not what we do but what we do for others, the legacy we leave and the imprint we make." - Eric Meyer
 */
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -103484,7 +103585,7 @@ Object.defineProperty(PIXI.TilingSprite.prototype, 'height', {
 }).call(this);
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -103672,6 +103773,38 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
+
+/***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
+var _this = this;
+
+
+
+let PlatformMedium = function (game, x, y, key) {
+  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
+  game.physics.arcade.enable(this);
+  this.collideWorldBounds = true;
+  this.body.collideWorldBounds = true;
+  this.body.immovable = true;
+  this.body.moves = false;
+};
+
+PlatformMedium.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
+PlatformMedium.prototype.constructor = PlatformMedium;
+
+PlatformMedium.prototype.physicsEnable = () => {
+  _this.body.immovable = false;
+  _this.body.moves = true;
+};
+
+/* unused harmony default export */ var _unused_webpack_default_export = ({
+  PlatformMedium: PlatformMedium
+});
 
 /***/ })
 /******/ ]);

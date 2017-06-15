@@ -1,12 +1,11 @@
 import gameState from './Game';
 import bootState from './Boot';
 import preloadState from './Preload';
-import Phaser from 'phaser';
 
-var ZPlat = ZPlat || {};
+let StateObj = {};
 
-ZPlat.Game = gameState;
-ZPlat.Boot = bootState;
-ZPlat.Preload = preloadState;
+StateObj.Game = gameState;
+StateObj.Boot = bootState;
+StateObj.Preload = preloadState;
 
-export default ZPlat;
+export default StateObj;

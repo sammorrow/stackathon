@@ -14,6 +14,8 @@ export default {
     this.load.image('platform', 'assets/images/platform.png');
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
+    this.load.image('platform-medium', 'assets/images/platform-medium.png');
+
     this.load.spritesheet('player', 'assets/images/vegeta-small.png', 32, 64)
     this.load.spritesheet('fly', 'assets/images/fly_spritesheet.png', 35, 18, 2, 1, 2);
     this.load.image('arrowButton', 'assets/images/arrowButton.png');
@@ -24,6 +26,8 @@ export default {
 
     // this.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     this.load.tilemap('level1', 'assets/levels/testmap-5.json', null, Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-one-obj.json', null, Phaser.Tilemap.TILED_JSON);
+
 
 
 

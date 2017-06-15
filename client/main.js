@@ -1,12 +1,14 @@
 import PIXI from '../node_modules/phaser/build/custom/pixi';
 import p2 from '../node_modules/phaser/build/custom/p2';
 import Phaser from 'phaser';
-import ZPlat from './states';
+import gameObj from './states';
 
-ZPlat.game = new Phaser.Game(480, 360, Phaser.AUTO);
+let Platformer = {};
 
-ZPlat.game.state.add('Boot', ZPlat.Boot);
-ZPlat.game.state.add('Preload', ZPlat.Preload);
-ZPlat.game.state.add('Game', ZPlat.Game);
+Platformer.game = new Phaser.Game(480, 360, Phaser.AUTO);
 
-ZPlat.game.state.start('Boot');
+Platformer.game.state.add('Boot', gameObj.Boot);
+Platformer.game.state.add('Preload', gameObj.Preload);
+Platformer.game.state.add('Game', gameObj.Game);
+
+Platformer.game.state.start('Boot');
