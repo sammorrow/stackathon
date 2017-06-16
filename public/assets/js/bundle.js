@@ -154,12 +154,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 let Platformer = {};
 
-Platformer.game = new __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.Game(480, 360, __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.AUTO);
+Platformer.game = new __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.Game(620, 360, __WEBPACK_IMPORTED_MODULE_2_phaser___default.a.AUTO);
 
 Platformer.game.state.add('Boot', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Boot);
 Platformer.game.state.add('Preload', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Preload);
 Platformer.game.state.add('Game', __WEBPACK_IMPORTED_MODULE_3__states__["a" /* default */].Game);
-
 Platformer.game.state.start('Boot');
 
 /***/ }),
@@ -169,28 +168,25 @@ Platformer.game.state.start('Boot');
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
-var _this = this;
 
 
-
-let Slime = function (game, x, y, key, health) {
-  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
+let Slime = function (ctx, x, y, key, health) {
+  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, ctx.game, x, y, key);
   this.animations.add('hit', [0, 1], 25, false);
   this.health = health;
-  game.physics.arcade.enable(this);
-  this.body.bounce.x = 1;
+  ctx.game.physics.p2.enable(this);
+
+  this.body.clearShapes();
+  this.body.loadPolygon('sprite_physics', 'slime');
+  this.body.setCollisionGroup(ctx.enemyCollisionGroup);
+  this.body.collides([ctx.terrainCollisionGroup, ctx.playerCollisionGroup, ctx.enemyCollisionGroup, ctx.platformCollisionGroup]);
   this.body.velocity.x = 100;
   this.body.collideWorldBounds = true;
+  this.value = 5;
 };
 
 Slime.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
 Slime.prototype.constructor = Slime;
-
-Slime.prototype.physicsEnable = game => {
-  _this.enableBody = true;
-  game.physics.arcade.enable(_this);
-};
-
 /* harmony default export */ __webpack_exports__["a"] = ({ Slime: Slime });
 
 /***/ }),
@@ -200,28 +196,31 @@ Slime.prototype.physicsEnable = game => {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_phaser__);
-var _this = this;
 
 
-
-let PlatformMedium = function (game, x, y, key) {
-  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, game, x, y, key);
-  game.physics.arcade.enable(this);
-  this.collideWorldBounds = true;
+let PlatformMedium = function (ctx, x, y, key) {
+  __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.call(this, ctx.game, x, y, key);
+  ctx.game.physics.p2.enable(this);
+  this.body.clearShapes();
+  this.body.loadPolygon('sprite_physics', 'platform-medium');
+  this.body.setCollisionGroup(ctx.platformCollisionGroup);
+  this.body.collides([ctx.terrainCollisionGroup, ctx.playerCollisionGroup, ctx.enemyCollisionGroup, ctx.platformCollisionGroup]);
   this.body.collideWorldBounds = true;
-  this.body.immovable = true;
-  this.body.moves = false;
+  this.inputEnabled = true;
+  this.events.onInputDown.add(() => {
+    ctx.setRope(this, this.world.x, this.world.y);
+  });
 };
 
 PlatformMedium.prototype = Object.create(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Sprite.prototype);
 PlatformMedium.prototype.constructor = PlatformMedium;
 
-PlatformMedium.prototype.physicsEnable = () => {
-  _this.body.immovable = false;
-  _this.body.moves = true;
-};
+// PlatformMedium.prototype.physicsEnable = function(){
+//   this.body.immovable = false;
+//   this.body.moves = true;
+// }
 
-/* unused harmony default export */ var _unused_webpack_default_export = ({
+/* harmony default export */ __webpack_exports__["a"] = ({
   PlatformMedium: PlatformMedium
 });
 
@@ -233,7 +232,7 @@ PlatformMedium.prototype.physicsEnable = () => {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Enemy__ = __webpack_require__(6);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__Enemy__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Platform__ = __webpack_require__(7);
-/* unused harmony reexport platformObj */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__Platform__["a"]; });
 
 
 
@@ -260,7 +259,8 @@ PlatformMedium.prototype.physicsEnable = () => {
     this.scale.pageAlignVertically = true;
 
     //physics system
-    this.game.physics.startSystem(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Physics.ARCADE);
+    this.game.physics.startSystem(__WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Physics.P2JS);
+    this.game.physics.p2.gravity.y = 1000;
   },
   preload: function () {
     //assets we'll use in the loading screen
@@ -285,6 +285,74 @@ PlatformMedium.prototype.physicsEnable = () => {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
   //custom methods
+  setRope: function (sprite, x, y) {
+    this.game.physics.p2.removeSpring(this.rope);
+    if (this.ropeBitmapData) {
+      this.ropeBitmapData.clear();
+      this.ropeBitmapData = null;
+    }
+    this.createRope(sprite, x, y);
+  },
+  createRope: function (anchorSprite, targetX, targetY) {
+    // Add bitmap data to draw the rope
+    this.anchoredSprite = anchorSprite;
+    this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
+
+    this.ropeBitmapData.ctx.beginPath();
+    this.ropeBitmapData.ctx.lineWidth = "4";
+    this.ropeBitmapData.ctx.strokeStyle = "#000000";
+    this.ropeBitmapData.ctx.stroke();
+
+    // Create a new sprite using the bitmap data
+    this.line = this.game.add.sprite(0, 0, this.ropeBitmapData);
+    // Keep track of where the rope is anchored
+    let ropeAnchorX = -targetX,
+        ropeAnchorY = -targetY;
+
+    // Create a spring between the player and block to act as the rope
+    this.rope = this.game.physics.p2.createSpring(anchorSprite, // sprite 1
+    this.player, // sprite 2
+    100, // length of the rope
+    10, // stiffness
+    3, // damping
+    [ropeAnchorX, ropeAnchorY]);
+    // Draw a line from the player to the platform to visually represent the spring
+    this.line = new __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Line(this.player.x, this.player.y, ropeAnchorY, ropeAnchorY);
+  },
+
+  drawRope: function (anchorSprite) {
+    let setDrawX = anchorSprite.world.x,
+        setDrawY = anchorSprite.world.y;
+    var me = this;
+    if (this.ropeBitmapData) {
+      // Change the bitmap data to reflect the new rope position
+      me.ropeBitmapData.clear();
+      me.ropeBitmapData.ctx.beginPath();
+      me.ropeBitmapData.ctx.moveTo(me.player.x, me.player.y);
+      me.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+      me.ropeBitmapData.ctx.lineWidth = 4;
+      me.ropeBitmapData.ctx.stroke();
+      me.ropeBitmapData.ctx.closePath();
+      me.ropeBitmapData.render();
+    }
+  },
+
+  createObjects: function (objectName) {
+    var me = this;
+
+    // Create a group to hold the collision shapes
+    var objects = this.game.add.group();
+    objects.enableBody = true;
+    objects.physicsBodyType = __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Physics.P2JS;
+    objects.createMultiple(40, objectName);
+
+    objects.forEach(function (child) {
+      child.body.clearShapes();
+      child.body.loadPolygon('sprite_physics', objectName);
+    }, me);
+    return objects;
+  },
+
   restart: function () {
     this.game.state.start('Game');
   },
@@ -302,8 +370,10 @@ PlatformMedium.prototype.physicsEnable = () => {
 
   init: function () {
     //constants
+    this.anchoredSprite = this.platform;
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
+    this.MAX_SPEED = 500;
 
     //gravity
     this.game.physics.arcade.gravity.y = 1000;
@@ -319,9 +389,7 @@ PlatformMedium.prototype.physicsEnable = () => {
   create: function () {
 
     let self = this;
-    __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {
-      self.game.physics.arcade.collide(this, self.player);
-    };
+    __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {};
     //load current level
     this.loadLevel();
 
@@ -330,17 +398,31 @@ PlatformMedium.prototype.physicsEnable = () => {
   },
 
   update: function () {
-    console.log(this.game);
+    this.drawRope(this.anchoredSprite);
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
-    this.game.physics.arcade.collide(this.player, this.collisionLayer);
-    this.game.physics.arcade.collide(this.enemyPool, this.collisionLayer);
-    //this.game.physics.arcade.collide(this.enemy, this.player);
-    this.game.physics.arcade.collide(this.player, this.platform);
+    // if(this.game.input.activePointer.leftButton.isDown){
+    //   this.setRope(this.game.input, this.game.input.activePointer.x, this.game.input.activePointer.y);
+    // }
 
+    //speed checks
+    if (this.player.body.velocity.x > this.MAX_SPEED) {
+      this.player.body.velocity.x = this.MAX_SPEED;
+    } else if (this.player.body.velocity.x < -this.MAX_SPEED) {
+      this.player.body.velocity.x = -this.MAX_SPEED;
+    }
+
+    this.game.physics.arcade.collide(this.player, this.platform);
+    let currentVelocity = this.player.body.velocity.x;
     this.player.body.velocity.x = 0;
 
-    if (this.player.top >= this.world.height - 48 || this.player.left <= 0) {
+    this.enemyPool.forEach(enemy => {
+      if (enemy.top >= this.world.height - 42) {
+        enemy.kill();
+      }
+    });
+
+    if (this.player.top >= this.world.height - 42) {
       this.gameOver();
     }
 
@@ -357,9 +439,20 @@ PlatformMedium.prototype.physicsEnable = () => {
       this.player.frame = 3;
     }
 
-    if ((this.cursors.up.isDown || this.player.customParams.mustJump) && (this.player.body.blocked.down || this.player.body.touching.down)) {
+    // if ((this.cursors.up.isDown && this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) && (this.player.body.blocked.down || this.player.body.touching.down)){
+    //   this.player.body.velocity.x = currentVelocity;
+    //   this.player.body.velocity.y = -this.JUMPING_SPEED;
+    if (this.cursors.up.isDown || this.player.customParams.mustJump) {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
+    } else if (this.input.keyboard.isDown(__WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Keyboard.SPACEBAR)) {
+      console.log("HI");
+      this.game.physics.p2.removeSpring(this.rope);
+      this.rope = null;
+      if (this.ropeBitmapData) {
+        this.ropeBitmapData.clear();
+        this.ropeBitmapData = null;
+      }
     }
   },
   loadLevel: function () {
@@ -368,46 +461,74 @@ PlatformMedium.prototype.physicsEnable = () => {
 
     //join the tile images to the json data
     this.map.addTilesetImage('goodly-2x', 'gameTiles');
+    this.map.setCollisionBetween(1, 100);
 
     //create layers
+    this.skyLayer = this.map.createLayer('skyLayer');
     this.backgroundLayer = this.map.createLayer('backgroundLayer');
     this.collisionLayer = this.map.createLayer('collisionLayer');
-    this.skyLayer = this.map.createLayer('skyLayer');
-
-    //send background to the back
-    this.game.world.sendToBack(this.backgroundLayer);
-    this.game.world.sendToBack(this.skyLayer);
+    this.game.physics.p2.setBoundsToWorld(true, true, true, true, true);
 
     //collision layer should be collisionLayer
     this.map.setCollisionBetween(1, 160, true, 'collisionLayer');
 
+    //create collision groups
+    this.playerCollisionGroup = this.game.physics.p2.createCollisionGroup();
+    this.platformCollisionGroup = this.game.physics.p2.createCollisionGroup();
+    this.terrainCollisionGroup = this.game.physics.p2.createCollisionGroup();
+    this.enemyCollisionGroup = this.game.physics.p2.createCollisionGroup();
+
+    this.tileObjects = this.game.physics.p2.convertTilemap(this.map, 'collisionLayer');
+
+    //add platforms
+    var self = this;
+    this.tileObjects.forEach(tile => {
+      tile.setCollisionGroup(this.terrainCollisionGroup);
+      tile.collides([this.playerCollisionGroup, this.platformCollisionGroup, this.enemyCollisionGroup]);
+    }
     //resize the world to fit the layer
-    this.collisionLayer.resizeWorld();
+    );this.collisionLayer.resizeWorld();
 
     //create player
-    let playerArr = this.findObjectsByType('player', this.map, 'objectLayer');
+    let playerArr = this.findObjectsByType('player', this.map, 'Object Layer 1');
     this.player = this.add.sprite(playerArr[0].x, playerArr[0].y, 'player', 0);
     this.player.anchor.setTo(0.5);
-    this.player.animations.add('walking', [0, 1], 6, true);
-    this.game.physics.arcade.enable(this.player);
+    // this.player.animations.add('walking', [0, 1], 6, true);
+    this.game.physics.p2.enable(this.player);
+    this.player.body.clearShapes();
+    this.player.body.loadPolygon('sprite_physics', 'betty');
+    this.player.body.setCollisionGroup(this.playerCollisionGroup);
+    this.player.body.collides([this.terrainCollisionGroup, this.platformCollisionGroup, this.enemyCollisionGroup]);
     this.player.customParams = {};
     this.player.body.collideWorldBounds = true;
 
-    //add platforms
-    // this.platform = new platformObj.PlatformMedium(this.game, 400, 300, 'platform-medium')
-    // this.game.add.existing(this.platform)
-    //this.platform.physicsEnable(this.game)
+    //create platforms
+    let platformArr = this.findObjectsByType('platform', this.map, 'Object Layer 1');
+    platformArr.forEach(el => {
+      let platform = new __WEBPACK_IMPORTED_MODULE_0__prefabs___["b" /* platformObj */].PlatformMedium(self, +el.x, +el.y, 'platform-medium');
+      this.game.add.existing(platform);
+      this.platformPool.add(platform);
+    });
 
-    //create enemy
-    let enemyArr = this.findObjectsByType('enemy', this.map, 'objectLayer');
+    this.platform = new __WEBPACK_IMPORTED_MODULE_0__prefabs___["b" /* platformObj */].PlatformMedium(self, 100, 100, 'platform-medium');
+    this.game.add.existing(this.platform);
+    this.platformPool.add(this.platform);
+
+    //create enemies
+    let enemyArr = this.findObjectsByType('enemy', this.map, 'Object Layer 1');
     enemyArr.forEach(el => {
-      let newFoe = new __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime(this.game, el.x, el.y, 'slime', 10);
+      let newFoe = new __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime(this, el.x, el.y, 'slime', 10);
       this.game.add.existing(newFoe);
       this.enemyPool.add(newFoe);
     });
 
-    //follow player with the camera
+    //clean-up
+    this.game.physics.p2.updateBoundsCollisionGroup();
     this.game.camera.follow(this.player);
+    this.createRope(this.platform, this.platform.world.x, this.platform.world.y + this.platform.height);
+    //send background to the back
+    this.game.world.sendToBack(this.backgroundLayer);
+    this.game.world.sendToBack(this.skyLayer);
   }
 });
 
@@ -487,12 +608,16 @@ PlatformMedium.prototype.physicsEnable = () => {
     this.load.setPreloadSprite(this.preloadBar);
 
     //load game assets
-    this.load.image('platform', 'assets/images/platform.png');
+
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
-    this.load.image('platform-medium', 'assets/images/platform-medium.png');
 
-    this.load.spritesheet('player', 'assets/images/vegeta-small.png', 32, 64);
+    //platforms
+    this.load.image('platform-medium', 'assets/images/platform-medium.png');
+    this.load.physics('sprite_physics', 'assets/physics/physics.json'
+
+    //player
+    );this.load.spritesheet('player', 'assets/images/betty.png', 256, 256);
     this.load.spritesheet('fly', 'assets/images/fly_spritesheet.png', 35, 18, 2, 1, 2);
     this.load.image('arrowButton', 'assets/images/arrowButton.png');
     this.load.image('actionButton', 'assets/images/actionButton.png');
@@ -501,8 +626,7 @@ PlatformMedium.prototype.physicsEnable = () => {
     this.load.image('gameTiles', 'assets/images/goodly-2x.png');
 
     // this.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
-    this.load.tilemap('level1', 'assets/levels/testmap-5.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
-    this.load.tilemap('level-one', 'assets/levels/level-one-obj.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-two.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
   },
   create: function () {
     this.state.start('Game');

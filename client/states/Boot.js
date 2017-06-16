@@ -14,7 +14,8 @@ export default {
     this.scale.pageAlignVertically = true;
 
     //physics system
-    this.game.physics.startSystem(Phaser.Physics.ARCADE);
+    this.game.physics.startSystem(Phaser.Physics.P2JS);
+    this.game.physics.p2.gravity.y = 1000;
   },
   preload: function() {
     //assets we'll use in the loading screen
