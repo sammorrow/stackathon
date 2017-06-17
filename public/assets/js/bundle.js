@@ -102,6 +102,13 @@ module.exports = g;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(12);
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -121,17 +128,10 @@ StateObj.Preload = __WEBPACK_IMPORTED_MODULE_2__Preload__["a" /* default */];
 /* harmony default export */ __webpack_exports__["a"] = (StateObj);
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(14);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["p2"] = __webpack_require__(12);
+/* WEBPACK VAR INJECTION */(function(global) {module.exports = global["PIXI"] = __webpack_require__(14);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -140,13 +140,13 @@ StateObj.Preload = __WEBPACK_IMPORTED_MODULE_2__Preload__["a" /* default */];
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__node_modules_phaser_build_custom_pixi__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__node_modules_phaser_build_custom_pixi__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__node_modules_phaser_build_custom_pixi___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__node_modules_phaser_build_custom_pixi__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_phaser_build_custom_p2__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_phaser_build_custom_p2__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_phaser_build_custom_p2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__node_modules_phaser_build_custom_p2__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_phaser__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_phaser__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__states__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__states__ = __webpack_require__(3);
 
 
 
@@ -178,6 +178,7 @@ let Slime = function (ctx, x, y, key, health) {
 
   this.body.clearShapes();
   this.body.loadPolygon('sprite_physics', 'slime');
+  this.body.adjustCenterOfMass();
   this.body.setCollisionGroup(ctx.enemyCollisionGroup);
   this.body.collides([ctx.terrainCollisionGroup, ctx.playerCollisionGroup, ctx.enemyCollisionGroup, ctx.platformCollisionGroup]);
   this.body.collideWorldBounds = true;
@@ -275,6 +276,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.load.image('preloadbar', 'assets/images/preloader-bar.png');
   },
   create: function () {
+    this.game.input.mouse.capture = true;
     this.state.start('Preload');
   }
 });
@@ -287,7 +289,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__prefabs___ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_phaser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_phaser__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_p2__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_p2__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_p2___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_p2__);
 
 
@@ -308,6 +310,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     }
   },
   setRope: function (sprite, x, y) {
+    this.ROPE_LENGTH = Math.sqrt(Math.pow(sprite.world.x - this.player.world.x, 2) + Math.pow(sprite.world.y - this.player.world.y, 2));
     this.removeRope();
     this.createRope(sprite, x, y);
     //this.drawRope(this.anchoredSprite)
@@ -329,8 +332,9 @@ PlatformMedium.prototype.constructor = PlatformMedium;
   },
 
   createRope: function (anchorSprite, targetX, targetY) {
+    console.log(this.game.physics.p2
     // Add bitmap data to draw the rope
-    if (anchorSprite) {
+    );if (anchorSprite) {
       this.anchoredSprite = anchorSprite;
     }
     if (targetX) {
@@ -351,8 +355,8 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.rope = this.game.physics.p2.createSpring(this.anchoredSprite, // sprite 1
     this.player, // sprite 2
     this.ROPE_LENGTH, // length of the rope
-    100, // stiffness
-    100, // damping
+    80, // stiffness
+    1, // damping
     [this.ropeAnchorX, this.ropeAnchorY]);
     this.player.customParams.isHooked = true;
     // Draw a line from the player to the platform to visually represent the spring
@@ -410,9 +414,9 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     //constants
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
-    this.MAX_SPEED = 500;
+    this.MAX_SPEED = 3000;
     this.ROPE_LENGTH = 100;
-    this.MAX_ROPE_LENGTH = 200;
+    this.MAX_ROPE_LENGTH = 300;
     this.MIN_ROPE_LENGTH = 75;
     this.ROPE_RESET = 300;
 
@@ -426,9 +430,8 @@ PlatformMedium.prototype.constructor = PlatformMedium;
   },
   create: function () {
 
-    let self = this;
     __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {
-      this.body.velocity.x = 100;
+      this.body.velocity.x = -100;
     };
     //  platformObj.PlatformMedium.prototype.update = function(){
     //     this.body.velocity.y = 0;
@@ -489,18 +492,19 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     //   this.player.body.velocity.x = currentVelocity;
     //   this.player.body.velocity.y = -this.JUMPING_SPEED;
 
-    if (this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && this.ROPE_LENGTH + 6 < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked) {
-      this.ropeTimer = Date.now();
-      this.ROPE_LENGTH += 5;
-      this.setRope();
-    } else if (this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && this.ROPE_LENGTH - 6 > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked) {
-      this.ropeTimer = Date.now();
-      this.ROPE_LENGTH -= 5;
-      this.setRope();
-    } else if (this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked) {
+    // if((this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH + 6) < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked)){
+    //   this.ropeTimer = Date.now();
+    //   this.ROPE_LENGTH += 5;
+    //   this.setRope();
+
+    // } else if ((this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH - 6) > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked)){
+    //   this.ropeTimer = Date.now();
+    //   this.ROPE_LENGTH -= 5;
+    //   this.setRope();
+    if (this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked) {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
-    } else if (this.input.keyboard.isDown(__WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Keyboard.SPACEBAR)) {
+    } else if (this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp) {
       this.removeRope("full");
     }
   },
@@ -673,7 +677,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
 
     //map
     this.load.image('gameTiles', 'assets/images/goodly-2x.png');
-    this.load.tilemap('level-one', 'assets/levels/level-two.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-three.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
 
     //scoreboard
     this.scoreLabel = this.game.add.text(this.game.world.centerX, 100, "0", { font: "100px Arial", fill: "#fff" });

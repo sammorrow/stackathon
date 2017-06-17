@@ -8,6 +8,7 @@ let Slime = function(ctx, x, y, key, health) {
 
   this.body.clearShapes()
   this.body.loadPolygon('sprite_physics', 'slime');
+  this.body.adjustCenterOfMass();
   this.body.setCollisionGroup(ctx.enemyCollisionGroup);
   this.body.collides([
     ctx.terrainCollisionGroup,

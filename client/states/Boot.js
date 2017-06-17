@@ -22,6 +22,7 @@ export default {
     this.load.image('preloadbar', 'assets/images/preloader-bar.png');
   },
   create: function() {
+    this.game.input.mouse.capture = true;
     this.state.start('Preload');
   }
 };

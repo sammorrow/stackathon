@@ -17,6 +17,7 @@ export default {
     }
   },
   setRope: function(sprite, x, y){
+    this.ROPE_LENGTH = (Math.sqrt(Math.pow(((sprite.world.x) - (this.player.world.x)), 2) + Math.pow(((sprite.world.y) - (this.player.world.y)), 2)))
     this.removeRope()
     this.createRope(sprite, x, y);
     //this.drawRope(this.anchoredSprite)
@@ -37,6 +38,7 @@ export default {
   },
 
   createRope: function(anchorSprite, targetX, targetY) {
+    console.log(this.game.physics.p2)
       // Add bitmap data to draw the rope
       if (anchorSprite){
         this.anchoredSprite = anchorSprite
@@ -60,8 +62,8 @@ export default {
           this.anchoredSprite,  // sprite 1
           this.player, // sprite 2
           this.ROPE_LENGTH, // length of the rope
-          100,        // stiffness
-          100,         // damping
+          80,        // stiffness
+          1,         // damping
           [this.ropeAnchorX, this.ropeAnchorY]
 
       );
@@ -122,9 +124,9 @@ export default {
     //constants
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
-    this.MAX_SPEED = 500;
+    this.MAX_SPEED = 3000;
     this.ROPE_LENGTH = 100;
-    this.MAX_ROPE_LENGTH = 200;
+    this.MAX_ROPE_LENGTH = 300;
     this.MIN_ROPE_LENGTH = 75;
     this.ROPE_RESET = 300;
 
@@ -138,9 +140,8 @@ export default {
   },
   create: function() {
 
-      let self = this
       enemyObj.Slime.prototype.update = function(){
-        this.body.velocity.x = 100;
+        this.body.velocity.x = -100;
     }
     //  platformObj.PlatformMedium.prototype.update = function(){
     //     this.body.velocity.y = 0;
@@ -202,19 +203,19 @@ export default {
     //   this.player.body.velocity.x = currentVelocity;
     //   this.player.body.velocity.y = -this.JUMPING_SPEED;
 
-    if((this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH + 6) < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked)){
-      this.ropeTimer = Date.now();
-      this.ROPE_LENGTH += 5;
-      this.setRope();
+    // if((this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH + 6) < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked)){
+    //   this.ropeTimer = Date.now();
+    //   this.ROPE_LENGTH += 5;
+    //   this.setRope();
 
-    } else if ((this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH - 6) > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked)){
-      this.ropeTimer = Date.now();
-      this.ROPE_LENGTH -= 5;
-      this.setRope();
-    } else if ((this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked)){
+    // } else if ((this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH - 6) > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked)){
+    //   this.ropeTimer = Date.now();
+    //   this.ROPE_LENGTH -= 5;
+    //   this.setRope();
+    if ((this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked)){
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
-    } else if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+    } else if (this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp){
       this.removeRope("full")
     }
   },

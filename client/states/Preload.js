@@ -26,7 +26,7 @@ export default {
 
     //map
     this.load.image('gameTiles', 'assets/images/goodly-2x.png');
-    this.load.tilemap('level-one', 'assets/levels/level-two.json', null, Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-three.json', null, Phaser.Tilemap.TILED_JSON);
 
     //scoreboard
     this.scoreLabel = this.game.add.text((this.game.world.centerX), 100, "0", {font: "100px Arial", fill: "#fff"});
