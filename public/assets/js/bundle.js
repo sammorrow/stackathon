@@ -180,7 +180,6 @@ let Slime = function (ctx, x, y, key, health) {
   this.body.loadPolygon('sprite_physics', 'slime');
   this.body.setCollisionGroup(ctx.enemyCollisionGroup);
   this.body.collides([ctx.terrainCollisionGroup, ctx.playerCollisionGroup, ctx.enemyCollisionGroup, ctx.platformCollisionGroup]);
-  this.body.velocity.x = 100;
   this.body.collideWorldBounds = true;
   this.value = 5;
 };
@@ -206,6 +205,9 @@ let PlatformMedium = function (ctx, x, y, key) {
   this.body.setCollisionGroup(ctx.platformCollisionGroup);
   this.body.collides([ctx.terrainCollisionGroup, ctx.playerCollisionGroup, ctx.enemyCollisionGroup, ctx.platformCollisionGroup]);
   this.body.collideWorldBounds = true;
+  this.body.data.gravityScale = 0;
+  this.body.kinematic = true;
+  this.body.mass = 4;
   this.inputEnabled = true;
   this.events.onInputDown.add(() => {
     ctx.setRope(this, this.world.x, this.world.y);
@@ -285,17 +287,30 @@ PlatformMedium.prototype.constructor = PlatformMedium;
 /* harmony default export */ __webpack_exports__["a"] = ({
 
   //custom methods
-  setRope: function (sprite, x, y) {
+  removeRope(full) {
     this.game.physics.p2.removeSpring(this.rope);
+    if (full) this.player.customParams.isHooked = false;
+    this.rope = null;
     if (this.ropeBitmapData) {
       this.ropeBitmapData.clear();
       this.ropeBitmapData = null;
     }
+  },
+  setRope: function (sprite, x, y) {
+    this.removeRope();
     this.createRope(sprite, x, y);
+    //this.drawRope(this.anchoredSprite)
+    console.log(this.ROPE_LENGTH);
   },
   createRope: function (anchorSprite, targetX, targetY) {
     // Add bitmap data to draw the rope
-    this.anchoredSprite = anchorSprite;
+    if (anchorSprite) {
+      this.anchoredSprite = anchorSprite;
+    }
+    if (targetX) {
+      this.ropeAnchorX = -targetX;
+      this.ropeAnchorY = -targetY;
+    }
     this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
 
     this.ropeBitmapData.ctx.beginPath();
@@ -306,40 +321,37 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     // Create a new sprite using the bitmap data
     this.line = this.game.add.sprite(0, 0, this.ropeBitmapData);
     // Keep track of where the rope is anchored
-    let ropeAnchorX = -targetX,
-        ropeAnchorY = -targetY;
-
     // Create a spring between the player and block to act as the rope
-    this.rope = this.game.physics.p2.createSpring(anchorSprite, // sprite 1
+    this.rope = this.game.physics.p2.createSpring(this.anchoredSprite, // sprite 1
     this.player, // sprite 2
-    100, // length of the rope
-    10, // stiffness
-    3, // damping
-    [ropeAnchorX, ropeAnchorY]);
+    this.ROPE_LENGTH, // length of the rope
+    100, // stiffness
+    100, // damping
+    [this.ropeAnchorX, this.ropeAnchorY]);
+    this.player.customParams.isHooked = true;
     // Draw a line from the player to the platform to visually represent the spring
-    this.line = new __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Line(this.player.x, this.player.y, ropeAnchorY, ropeAnchorY);
+    this.line = new __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Line(this.player.x, this.player.y, this.ropeAnchorX, this.ropeAnchorY);
   },
 
-  drawRope: function (anchorSprite) {
-    let setDrawX = anchorSprite.world.x,
-        setDrawY = anchorSprite.world.y;
-    var me = this;
-    if (this.ropeBitmapData) {
-      // Change the bitmap data to reflect the new rope position
-      me.ropeBitmapData.clear();
-      me.ropeBitmapData.ctx.beginPath();
-      me.ropeBitmapData.ctx.moveTo(me.player.x, me.player.y);
-      me.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
-      me.ropeBitmapData.ctx.lineWidth = 4;
-      me.ropeBitmapData.ctx.stroke();
-      me.ropeBitmapData.ctx.closePath();
-      me.ropeBitmapData.render();
+  drawRope: function (anchoredSprite) {
+    if (anchoredSprite.world) {
+      let setDrawX = this.anchorSprite.world.x,
+          setDrawY = this.anchorSprite.world.y;
+      if (this.ropeBitmapData) {
+        // Change the bitmap data to reflect the new rope position
+        this.ropeBitmapData.clear();
+        this.ropeBitmapData.ctx.beginPath();
+        this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
+        this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+        this.ropeBitmapData.ctx.lineWidth = 4;
+        this.ropeBitmapData.ctx.stroke();
+        this.ropeBitmapData.ctx.closePath();
+        this.ropeBitmapData.render();
+      }
     }
   },
 
   createObjects: function (objectName) {
-    var me = this;
-
     // Create a group to hold the collision shapes
     var objects = this.game.add.group();
     objects.enableBody = true;
@@ -349,7 +361,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     objects.forEach(function (child) {
       child.body.clearShapes();
       child.body.loadPolygon('sprite_physics', objectName);
-    }, me);
+    }, this);
     return objects;
   },
 
@@ -370,14 +382,15 @@ PlatformMedium.prototype.constructor = PlatformMedium;
 
   init: function () {
     //constants
-    this.anchoredSprite = this.platform;
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
     this.MAX_SPEED = 500;
+    this.ROPE_LENGTH = 100;
+    this.MAX_ROPE_LENGTH = 200;
+    this.MIN_ROPE_LENGTH = 75;
+    this.ROPE_RESET = 300;
 
-    //gravity
-    this.game.physics.arcade.gravity.y = 1000;
-
+    this.ropeTimer = 0;
     //initialize groups
 
     this.platformPool = this.add.group();
@@ -387,9 +400,12 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
   create: function () {
-
-    let self = this;
-    __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {};
+    __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {
+      this.body.velocity.x = 100;
+    };
+    //  platformObj.PlatformMedium.prototype.update = function(){
+    //     this.body.velocity.y = 0;
+    // }
     //load current level
     this.loadLevel();
 
@@ -398,13 +414,10 @@ PlatformMedium.prototype.constructor = PlatformMedium;
   },
 
   update: function () {
-    this.drawRope(this.anchoredSprite);
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
-    // if(this.game.input.activePointer.leftButton.isDown){
-    //   this.setRope(this.game.input, this.game.input.activePointer.x, this.game.input.activePointer.y);
-    // }
-
+    //rope check
+    //break rope here!
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED) {
       this.player.body.velocity.x = this.MAX_SPEED;
@@ -412,17 +425,13 @@ PlatformMedium.prototype.constructor = PlatformMedium;
       this.player.body.velocity.x = -this.MAX_SPEED;
     }
 
-    this.game.physics.arcade.collide(this.player, this.platform);
-    let currentVelocity = this.player.body.velocity.x;
-    this.player.body.velocity.x = 0;
-
     this.enemyPool.forEach(enemy => {
       if (enemy.top >= this.world.height - 42) {
         enemy.kill();
       }
     });
 
-    if (this.player.top >= this.world.height - 42) {
+    if (this.player.top >= this.world.height - 60) {
       this.gameOver();
     }
 
@@ -442,17 +451,24 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     // if ((this.cursors.up.isDown && this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) && (this.player.body.blocked.down || this.player.body.touching.down)){
     //   this.player.body.velocity.x = currentVelocity;
     //   this.player.body.velocity.y = -this.JUMPING_SPEED;
-    if (this.cursors.up.isDown || this.player.customParams.mustJump) {
+
+    if (this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && this.ROPE_LENGTH + 6 < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked) {
+      this.ropeTimer = Date.now();
+      this.ROPE_LENGTH += 5;
+      this.setRope();
+    } else if (this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && this.ROPE_LENGTH - 6 > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked) {
+      this.ropeTimer = Date.now();
+      this.ROPE_LENGTH -= 5;
+      this.setRope();
+    } else if (this.cursors.up.isDown && !this.player.customParams.isHooked) {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
     } else if (this.input.keyboard.isDown(__WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Keyboard.SPACEBAR)) {
-      console.log("HI");
-      this.game.physics.p2.removeSpring(this.rope);
-      this.rope = null;
-      if (this.ropeBitmapData) {
-        this.ropeBitmapData.clear();
-        this.ropeBitmapData = null;
-      }
+      this.removeRope("full");
+    }
+    if (this.anchoredSprite) {
+      console.log(this.anchoredSprite);
+      this.drawRope(this.anchoredSprite);
     }
   },
   loadLevel: function () {
@@ -499,7 +515,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.player.body.loadPolygon('sprite_physics', 'betty');
     this.player.body.setCollisionGroup(this.playerCollisionGroup);
     this.player.body.collides([this.terrainCollisionGroup, this.platformCollisionGroup, this.enemyCollisionGroup]);
-    this.player.customParams = {};
+    this.player.customParams = { isHooked: false };
     this.player.body.collideWorldBounds = true;
 
     //create platforms
@@ -525,7 +541,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     //clean-up
     this.game.physics.p2.updateBoundsCollisionGroup();
     this.game.camera.follow(this.player);
-    this.createRope(this.platform, this.platform.world.x, this.platform.world.y + this.platform.height);
+    // this.createRope(this.platform, this.platform.world.x, this.platform.world.y + this.platform.height);
     //send background to the back
     this.game.world.sendToBack(this.backgroundLayer);
     this.game.world.sendToBack(this.skyLayer);
@@ -608,7 +624,6 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.load.setPreloadSprite(this.preloadBar);
 
     //load game assets
-
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
 
@@ -622,11 +637,14 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.load.image('arrowButton', 'assets/images/arrowButton.png');
     this.load.image('actionButton', 'assets/images/actionButton.png');
 
-    // this.load.image('gameTiles', 'assets/images/tiles_spritesheet.png');
+    //map
     this.load.image('gameTiles', 'assets/images/goodly-2x.png');
-
-    // this.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     this.load.tilemap('level-one', 'assets/levels/level-two.json', null, __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.Tilemap.TILED_JSON);
+
+    //scoreboard
+    this.scoreLabel = this.game.add.text(this.game.world.centerX, 100, "0", { font: "100px Arial", fill: "#fff" });
+    this.scoreLabel.anchor.setTo(0.5, 0.5);
+    this.scoreLabel.align = 'center';
   },
   create: function () {
     this.state.start('Game');

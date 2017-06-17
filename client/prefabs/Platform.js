@@ -13,10 +13,14 @@ let PlatformMedium = function(ctx, x, y, key) {
     ctx.platformCollisionGroup
     ]);
   this.body.collideWorldBounds = true;
-    this.inputEnabled = true;
-    this.events.onInputDown.add(() => {
-      ctx.setRope(this, this.world.x, this.world.y)
-    });
+  this.body.data.gravityScale = 0;
+  this.body.kinematic = true;
+  this.body.mass = 4;
+  this.inputEnabled = true;
+  this.events.onInputDown.add(() => {
+    ctx.setRope(this, this.world.x, this.world.y)
+  });
+
 }
 
 PlatformMedium.prototype = Object.create(Phaser.Sprite.prototype);

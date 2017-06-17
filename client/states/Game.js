@@ -4,17 +4,30 @@ import Phaser from 'phaser';
 export default {
 
   //custom methods
-  setRope: function(sprite, x, y){
+  removeRope(full){
     this.game.physics.p2.removeSpring(this.rope);
-    if(this.ropeBitmapData){
+    if (full) this.player.customParams.isHooked = false;
+    this.rope = null;
+    if (this.ropeBitmapData){
       this.ropeBitmapData.clear();
       this.ropeBitmapData = null;
     }
+  },
+  setRope: function(sprite, x, y){
+    this.removeRope()
     this.createRope(sprite, x, y);
+    //this.drawRope(this.anchoredSprite)
+    console.log(this.ROPE_LENGTH)
   },
   createRope: function(anchorSprite, targetX, targetY) {
       // Add bitmap data to draw the rope
-      this.anchoredSprite = anchorSprite
+      if (anchorSprite){
+        this.anchoredSprite = anchorSprite
+      }
+      if (targetX){
+        this.ropeAnchorX = -(targetX);
+        this.ropeAnchorY = -(targetY);
+      }
       this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
 
       this.ropeBitmapData.ctx.beginPath();
@@ -25,46 +38,41 @@ export default {
       // Create a new sprite using the bitmap data
       this.line = this.game.add.sprite(0, 0, this.ropeBitmapData);
       // Keep track of where the rope is anchored
-      let ropeAnchorX = -(targetX),
-      ropeAnchorY = -(targetY);
-
       // Create a spring between the player and block to act as the rope
       this.rope = this.game.physics.p2.createSpring(
-          anchorSprite,  // sprite 1
+          this.anchoredSprite,  // sprite 1
           this.player, // sprite 2
-          100,       // length of the rope
-          10,        // stiffness
-          3,         // damping
-          [ropeAnchorX, ropeAnchorY]
+          this.ROPE_LENGTH, // length of the rope
+          100,        // stiffness
+          100,         // damping
+          [this.ropeAnchorX, this.ropeAnchorY]
 
       );
+      this.player.customParams.isHooked = true;
       // Draw a line from the player to the platform to visually represent the spring
       this.line = new Phaser.Line(
           this.player.x, this.player.y,
-          ropeAnchorY, ropeAnchorY);
+          this.ropeAnchorX, this.ropeAnchorY);
   },
 
-    drawRope: function(anchorSprite) {
-      let
-      setDrawX = anchorSprite.world.x,
-      setDrawY = anchorSprite.world.y;
-      var me = this;
+    drawRope: function(anchoredSprite) {
+    if(anchoredSprite.world){
+      let setDrawX = this.anchorSprite.world.x, setDrawY = this.anchorSprite.world.y;
       if (this.ropeBitmapData){
       // Change the bitmap data to reflect the new rope position
-        me.ropeBitmapData.clear();
-        me.ropeBitmapData.ctx.beginPath();
-        me.ropeBitmapData.ctx.moveTo(me.player.x, me.player.y);
-        me.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
-        me.ropeBitmapData.ctx.lineWidth = 4;
-        me.ropeBitmapData.ctx.stroke();
-        me.ropeBitmapData.ctx.closePath();
-        me.ropeBitmapData.render();
+        this.ropeBitmapData.clear();
+        this.ropeBitmapData.ctx.beginPath();
+        this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
+        this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+        this.ropeBitmapData.ctx.lineWidth = 4;
+        this.ropeBitmapData.ctx.stroke();
+        this.ropeBitmapData.ctx.closePath();
+        this.ropeBitmapData.render();
       }
+    }
   },
 
   createObjects: function(objectName) {
-    var me = this;
-
     // Create a group to hold the collision shapes
     var objects = this.game.add.group();
     objects.enableBody = true;
@@ -74,7 +82,7 @@ export default {
     objects.forEach(function(child){
         child.body.clearShapes();
         child.body.loadPolygon('sprite_physics', objectName);
-    }, me);
+    }, this);
     return objects;
   },
 
@@ -95,14 +103,15 @@ export default {
 
   init: function() {
     //constants
-    this.anchoredSprite = this.platform;
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
     this.MAX_SPEED = 500;
+    this.ROPE_LENGTH = 100;
+    this.MAX_ROPE_LENGTH = 200;
+    this.MIN_ROPE_LENGTH = 75;
+    this.ROPE_RESET = 300;
 
-    //gravity
-    this.game.physics.arcade.gravity.y = 1000;
-
+    this.ropeTimer = 0;
     //initialize groups
 
     this.platformPool = this.add.group();
@@ -112,10 +121,12 @@ export default {
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
   create: function() {
-
-      let self = this
       enemyObj.Slime.prototype.update = function(){
+        this.body.velocity.x = 100;
     }
+    //  platformObj.PlatformMedium.prototype.update = function(){
+    //     this.body.velocity.y = 0;
+    // }
     //load current level
     this.loadLevel();
 
@@ -125,13 +136,10 @@ export default {
 
 
   update: function() {
-    this.drawRope(this.anchoredSprite);
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
-    // if(this.game.input.activePointer.leftButton.isDown){
-    //   this.setRope(this.game.input, this.game.input.activePointer.x, this.game.input.activePointer.y);
-    // }
-
+    //rope check
+      //break rope here!
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED){
       this.player.body.velocity.x = this.MAX_SPEED;
@@ -139,17 +147,13 @@ export default {
       this.player.body.velocity.x = -this.MAX_SPEED;
     }
 
-    this.game.physics.arcade.collide(this.player, this.platform);
-    let currentVelocity = this.player.body.velocity.x
-    this.player.body.velocity.x = 0;
-
     this.enemyPool.forEach(enemy => {
       if(enemy.top >= this.world.height - 42){
         enemy.kill()
       }
     });
 
-    if(this.player.top >= this.world.height - 42){
+    if(this.player.top >= this.world.height - 60){
       this.gameOver()
     }
 
@@ -169,18 +173,28 @@ export default {
     // if ((this.cursors.up.isDown && this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) && (this.player.body.blocked.down || this.player.body.touching.down)){
     //   this.player.body.velocity.x = currentVelocity;
     //   this.player.body.velocity.y = -this.JUMPING_SPEED;
-    if((this.cursors.up.isDown || this.player.customParams.mustJump)){
+
+    if((this.cursors.down.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH + 6) < this.MAX_ROPE_LENGTH && this.player.customParams.isHooked)){
+      this.ropeTimer = Date.now();
+      this.ROPE_LENGTH += 5;
+      this.setRope();
+
+    } else if ((this.cursors.up.isDown && this.ropeTimer + this.ROPE_RESET < Date.now() && (this.ROPE_LENGTH - 6) > this.MIN_ROPE_LENGTH && this.player.customParams.isHooked)){
+      this.ropeTimer = Date.now();
+      this.ROPE_LENGTH -= 5;
+      this.setRope();
+
+    } else if ((this.cursors.up.isDown && !this.player.customParams.isHooked)){
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
     } else if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
-      console.log("HI")
-      this.game.physics.p2.removeSpring(this.rope);
-      this.rope = null;
-      if (this.ropeBitmapData){
-        this.ropeBitmapData.clear();
-        this.ropeBitmapData = null;
-      }
+      this.removeRope("full")
     }
+    if (this.anchoredSprite) {
+      console.log(this.anchoredSprite);
+      this.drawRope(this.anchoredSprite);
+    }
+
   },
   loadLevel: function(){
 
@@ -234,7 +248,7 @@ export default {
       this.terrainCollisionGroup, this.platformCollisionGroup,
       this.enemyCollisionGroup
     ])
-    this.player.customParams = {};
+    this.player.customParams = {isHooked: false};
     this.player.body.collideWorldBounds = true;
 
     //create platforms
@@ -260,7 +274,7 @@ export default {
     //clean-up
     this.game.physics.p2.updateBoundsCollisionGroup();
     this.game.camera.follow(this.player);
-    this.createRope(this.platform, this.platform.world.x, this.platform.world.y + this.platform.height);
+    // this.createRope(this.platform, this.platform.world.x, this.platform.world.y + this.platform.height);
     //send background to the back
     this.game.world.sendToBack(this.backgroundLayer);
     this.game.world.sendToBack(this.skyLayer);

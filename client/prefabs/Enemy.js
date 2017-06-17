@@ -15,7 +15,6 @@ let Slime = function(ctx, x, y, key, health) {
     ctx.enemyCollisionGroup,
     ctx.platformCollisionGroup
   ]);
-  this.body.velocity.x = 100;
   this.body.collideWorldBounds = true;
   this.value = 5;
 }
