@@ -1,13 +1,16 @@
 import { enemyObj, platformObj } from '../prefabs/'
 import Phaser from 'phaser';
+import p2 from 'p2';
 
 export default {
 
   //custom methods
   removeRope(full){
     this.game.physics.p2.removeSpring(this.rope);
-    if (full) this.player.customParams.isHooked = false;
-    this.rope = null;
+    if (full){
+      this.player.customParams.isHooked = false;
+      this.rope = null;
+    }
     if (this.ropeBitmapData){
       this.ropeBitmapData.clear();
       this.ropeBitmapData = null;
@@ -19,6 +22,20 @@ export default {
     //this.drawRope(this.anchoredSprite)
     console.log(this.ROPE_LENGTH)
   },
+  touchingDown: function(sprite) {
+    var yAxis = p2.vec2.fromValues(0, 1);
+    var result = false;
+    for (var i = 0; i < this.game.physics.p2.world.narrowphase.contactEquations.length; i++) {        var c = this.game.physics.p2.world.narrowphase.contactEquations[i];
+      // cycles through all the contactEquations until it finds our "sprite"
+      if (c.bodyA === sprite.body.data || c.bodyB === sprite.body.data){
+        var d = p2.vec2.dot(c.normalA, yAxis); // Normal dot Y-axis
+        if (c.bodyA === sprite.body.data) d *= -1;
+        if (d > 0.5) result = true;
+      }
+    }
+    return result;
+  },
+
   createRope: function(anchorSprite, targetX, targetY) {
       // Add bitmap data to draw the rope
       if (anchorSprite){
@@ -112,11 +129,7 @@ export default {
     this.ROPE_RESET = 300;
 
     this.ropeTimer = 0;
-    //gravity
-    this.game.physics.arcade.gravity.y = 1000;
-
     //initialize groups
-
     this.platformPool = this.add.group();
     this.enemyPool = this.add.group();
 
@@ -145,9 +158,7 @@ export default {
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
     //rope check
-
-     console.log(this.rope)
-
+      //break rope here!
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED){
       this.player.body.velocity.x = this.MAX_SPEED;
@@ -156,12 +167,17 @@ export default {
     }
 
     this.game.physics.arcade.collide(this.player, this.platform);
-    let currentVelocity = this.player.body.velocity.x
     this.player.body.velocity.x = 0;
 
     this.enemyPool.forEach(enemy => {
       if(enemy.top >= this.world.height - 42){
         enemy.kill()
+      }
+    });
+
+    this.platformPool.forEach(platform => {
+      if(platform.top >= this.world.height - 42){
+        platform.kill()
       }
     });
 
@@ -195,14 +211,14 @@ export default {
       this.ropeTimer = Date.now();
       this.ROPE_LENGTH -= 5;
       this.setRope();
-
-    } else if ((this.cursors.up.isDown && !this.player.customParams.isHooked)){
+    } else if ((this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked)){
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
     } else if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
       this.removeRope("full")
     }
   },
+
   loadLevel: function(){
 
     this.map = this.add.tilemap('level-one');
@@ -245,11 +261,11 @@ export default {
     //create player
     let playerArr = this.findObjectsByType('player', this.map, 'Object Layer 1')
     this.player = this.add.sprite(playerArr[0].x, playerArr[0].y, 'player', 0);
-     this.player.anchor.setTo(0.5);
     // this.player.animations.add('walking', [0, 1], 6, true);
     this.game.physics.p2.enable(this.player);
     this.player.body.clearShapes();
     this.player.body.loadPolygon('sprite_physics', 'betty');
+    this.player.body.adjustCenterOfMass();
     this.player.body.setCollisionGroup(this.playerCollisionGroup);
     this.player.body.collides([
       this.terrainCollisionGroup, this.platformCollisionGroup,

@@ -19,10 +19,15 @@ let PlatformMedium = function(ctx, x, y, key) {
   this.inputEnabled = true;
   this.events.onInputDown.add(() => {
     ctx.setRope(this, this.world.x, this.world.y)
+    // this.body.velocity.y = 10;
+    // setTimeout(fastFall.bind(this), 5000)
   });
 
 }
 
+function fastFall(){
+  this.body.velocity.y = 1000;
+}
 PlatformMedium.prototype = Object.create(Phaser.Sprite.prototype);
 PlatformMedium.prototype.constructor = PlatformMedium;
 
