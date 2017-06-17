@@ -333,10 +333,10 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.line = new __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Line(this.player.x, this.player.y, this.ropeAnchorX, this.ropeAnchorY);
   },
 
-  drawRope: function (anchoredSprite) {
-    if (anchoredSprite.world) {
-      let setDrawX = this.anchorSprite.world.x,
-          setDrawY = this.anchorSprite.world.y;
+  drawRope: function (anchorSprite) {
+    if (anchorSprite) {
+      let setDrawX = anchorSprite.world.x,
+          setDrawY = anchorSprite.world.y;
       if (this.ropeBitmapData) {
         // Change the bitmap data to reflect the new rope position
         this.ropeBitmapData.clear();
@@ -391,6 +391,9 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.ROPE_RESET = 300;
 
     this.ropeTimer = 0;
+    //gravity
+    this.game.physics.arcade.gravity.y = 1000;
+
     //initialize groups
 
     this.platformPool = this.add.group();
@@ -400,6 +403,8 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
   create: function () {
+
+    let self = this;
     __WEBPACK_IMPORTED_MODULE_0__prefabs___["a" /* enemyObj */].Slime.prototype.update = function () {
       this.body.velocity.x = 100;
     };
@@ -414,16 +419,23 @@ PlatformMedium.prototype.constructor = PlatformMedium;
   },
 
   update: function () {
+    this.drawRope(this.anchoredSprite);
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
     //rope check
-    //break rope here!
+
+    console.log(this.rope
+
     //speed checks
-    if (this.player.body.velocity.x > this.MAX_SPEED) {
+    );if (this.player.body.velocity.x > this.MAX_SPEED) {
       this.player.body.velocity.x = this.MAX_SPEED;
     } else if (this.player.body.velocity.x < -this.MAX_SPEED) {
       this.player.body.velocity.x = -this.MAX_SPEED;
     }
+
+    this.game.physics.arcade.collide(this.player, this.platform);
+    let currentVelocity = this.player.body.velocity.x;
+    this.player.body.velocity.x = 0;
 
     this.enemyPool.forEach(enemy => {
       if (enemy.top >= this.world.height - 42) {
@@ -431,7 +443,7 @@ PlatformMedium.prototype.constructor = PlatformMedium;
       }
     });
 
-    if (this.player.top >= this.world.height - 60) {
+    if (this.player.top >= this.world.height - 42) {
       this.gameOver();
     }
 
@@ -465,10 +477,6 @@ PlatformMedium.prototype.constructor = PlatformMedium;
       this.player.customParams.mustJump = false;
     } else if (this.input.keyboard.isDown(__WEBPACK_IMPORTED_MODULE_1_phaser___default.a.Keyboard.SPACEBAR)) {
       this.removeRope("full");
-    }
-    if (this.anchoredSprite) {
-      console.log(this.anchoredSprite);
-      this.drawRope(this.anchoredSprite);
     }
   },
   loadLevel: function () {

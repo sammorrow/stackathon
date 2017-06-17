@@ -55,21 +55,21 @@ export default {
           this.ropeAnchorX, this.ropeAnchorY);
   },
 
-    drawRope: function(anchoredSprite) {
-    if(anchoredSprite.world){
-      let setDrawX = this.anchorSprite.world.x, setDrawY = this.anchorSprite.world.y;
-      if (this.ropeBitmapData){
-      // Change the bitmap data to reflect the new rope position
-        this.ropeBitmapData.clear();
-        this.ropeBitmapData.ctx.beginPath();
-        this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
-        this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
-        this.ropeBitmapData.ctx.lineWidth = 4;
-        this.ropeBitmapData.ctx.stroke();
-        this.ropeBitmapData.ctx.closePath();
-        this.ropeBitmapData.render();
+    drawRope: function(anchorSprite) {
+      if (anchorSprite){
+        let setDrawX = anchorSprite.world.x, setDrawY = anchorSprite.world.y;
+        if (this.ropeBitmapData){
+        // Change the bitmap data to reflect the new rope position
+          this.ropeBitmapData.clear();
+          this.ropeBitmapData.ctx.beginPath();
+          this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
+          this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+          this.ropeBitmapData.ctx.lineWidth = 4;
+          this.ropeBitmapData.ctx.stroke();
+          this.ropeBitmapData.ctx.closePath();
+          this.ropeBitmapData.render();
+        }
       }
-    }
   },
 
   createObjects: function(objectName) {
@@ -112,6 +112,9 @@ export default {
     this.ROPE_RESET = 300;
 
     this.ropeTimer = 0;
+    //gravity
+    this.game.physics.arcade.gravity.y = 1000;
+
     //initialize groups
 
     this.platformPool = this.add.group();
@@ -121,6 +124,8 @@ export default {
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
   create: function() {
+
+      let self = this
       enemyObj.Slime.prototype.update = function(){
         this.body.velocity.x = 100;
     }
@@ -136,10 +141,13 @@ export default {
 
 
   update: function() {
+    this.drawRope(this.anchoredSprite);
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
     //rope check
-      //break rope here!
+
+     console.log(this.rope)
+
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED){
       this.player.body.velocity.x = this.MAX_SPEED;
@@ -147,13 +155,17 @@ export default {
       this.player.body.velocity.x = -this.MAX_SPEED;
     }
 
+    this.game.physics.arcade.collide(this.player, this.platform);
+    let currentVelocity = this.player.body.velocity.x
+    this.player.body.velocity.x = 0;
+
     this.enemyPool.forEach(enemy => {
       if(enemy.top >= this.world.height - 42){
         enemy.kill()
       }
     });
 
-    if(this.player.top >= this.world.height - 60){
+    if(this.player.top >= this.world.height - 42){
       this.gameOver()
     }
 
@@ -190,11 +202,6 @@ export default {
     } else if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
       this.removeRope("full")
     }
-    if (this.anchoredSprite) {
-      console.log(this.anchoredSprite);
-      this.drawRope(this.anchoredSprite);
-    }
-
   },
   loadLevel: function(){
 
