@@ -27,6 +27,11 @@ export default {
   },
 
   fireHook: function(){
+    this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
+    this.ropeBitmapData.ctx.strokeStyle = "#f4a460"
+    this.ropeBitmapData.ctx.lineWidth = "6";
+    this.line = this.game.add.sprite(0, 0, this.ropeBitmapData)
+
     let hook = this.hookPool.getFirstExists(false)
     if (hook){
       hook.exists = true;
@@ -39,15 +44,20 @@ export default {
         this.platformCollisionGroup,
         this.terrainCollisionGroup
       ])
-      hook.body.onBeginContact.add( body => {
+      hook.body.onBeginContact.add(body => {
         if (body && body.sprite && body.sprite.key === "platform-medium"){
           this.setRope(body.sprite)
           hook.kill();
         }
       })
       hook.reset(this.player.world.x, this.player.world.y);
+      this.currentHook = hook;
       this.moveToPointer(hook, 2000)
-      setTimeout(() => {this.ACTIVE_HOOK = false}, 350)
+      setTimeout(() => {
+        if (this.ropeBitmapData) this.ropeBitmapData.clear();
+        this.ropeBitmapData = null;
+        this.ACTIVE_HOOK = false
+      }, 350)
     }
   },
 
@@ -58,7 +68,7 @@ export default {
           this.game.physics.p2.removeConstraint(allConstraints[i]);
         }
       }
-    if (this.ROPE_ANCHOR) this.player.body.velocity.x = this.ROPE_ANCHOR.body.velocity.x;
+    if (this.ROPE_ANCHOR && this.ROPE_ANCHOR.body) this.player.body.velocity.x = this.ROPE_ANCHOR.body.velocity.x;
     this.ropeLinks.forEach(link => {
       link.kill();
     })
@@ -70,9 +80,12 @@ export default {
     this.ROPE_ANCHOR = null;
     this.player.customParams.isHooked = false;
     this.ACTIVE_HOOK = false;
+    this.currentHook = null;
   },
 
   setRope: function(sprite){
+    if (this.ropeBitmapData) this.ropeBitmapData.clear();
+    this.ropeBitmapData = null;
     this.ROPE_LENGTH = (Math.sqrt(Math.pow(((sprite.world.x) - (this.player.world.x)), 2) + Math.pow(((sprite.world.y) - (this.player.world.y)), 2)))
     // let basePoint = [sprite.world.x, player.world.y];
     let sideLength;
@@ -81,7 +94,6 @@ export default {
     this.COSINE = Math.sin(sideLength / this.ROPE_LENGTH);
     this.removeRope()
     this.createRope(sprite);
-    console.log(this.ROPE_LENGTH)
   },
 
   createRope: function(anchorSprite) {
@@ -92,7 +104,7 @@ export default {
       else x = anchorSprite.world.x + ((20 * i)  * this.COSINE);
       if (anchorSprite.world.y >= this.player.world.y) y = anchorSprite.world.y - ((20 * i + 1) * (this.COSINE));
       else y = anchorSprite.world.y + ((20 * i)  * (this.COSINE));
-      console.log("X", x, "Y", y)
+      // console.log("X", x, "Y", y)
       if (i === 0){
         newRect = this.anchorPool.getFirstExists(false)
         this.anchors.push(newRect)
@@ -124,11 +136,24 @@ export default {
     this.ROPE_ANCHOR = lastRect;
     this.game.physics.p2.createRevoluteConstraint(lastRect, [0, 0], this.player, [0, -20], this.MAX_FORCE)
     this.player.customParams.isHooked = true;
+    this.ROPE_RESET_TIMER = Date.now();
   },
 
-  drawRope: function(){
-
+  drawRope: function(hookSprite) {
+    let setDrawX = hookSprite.world.x, setDrawY = hookSprite.world.y;
+      if (this.ropeBitmapData){
+      // Change the bitmap data to reflect the new rope position
+      this.ropeBitmapData.clear();
+      this.ropeBitmapData.ctx.beginPath();
+      this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
+      this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+      this.ropeBitmapData.ctx.lineWidth = 4;
+      this.ropeBitmapData.ctx.stroke();
+      this.ropeBitmapData.ctx.closePath();
+      this.ropeBitmapData.render();
+    }
   },
+
 
   restart: function(){
       this.game.state.start('Game')
@@ -164,8 +189,7 @@ export default {
 
     this.ACTIVE_HOOK = false;
     this.ROPE_LENGTH = 100;
-    this.MAX_ROPE_LENGTH = 300;
-    this.MIN_ROPE_LENGTH = 75;
+    this.ROPE_RESET_TIMER = 0;
     this.SWINGING_SPEED = 300;
 
     this.MAX_FORCE = 10000;
@@ -173,6 +197,8 @@ export default {
     this.ropeTimer = 0;
     this.ropeLinks = [];
     this.anchors = [];
+
+
     //initialize groups
     this.platformPool = this.add.group();
     this.enemyPool = this.add.group();
@@ -192,9 +218,7 @@ export default {
     enemyObj.Slime.prototype.update = function(){
         this.body.velocity.x = -100;
     }
-    //  platformObj.PlatformMedium.prototype.update = function(){
-    //     this.body.velocity.y = 0;
-    // }
+
     //load current level
     this.loadLevel();
 
@@ -207,8 +231,8 @@ export default {
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
 
     //rope check
-      if (this.ACTIVE_HOOK){
-        this.drawRope(this.ACTIVE_HOOK)
+      if (this.currentHook){
+        this.drawRope(this.currentHook)
       }
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED){
@@ -339,7 +363,6 @@ export default {
 
     //clean-up
     this.game.physics.p2.updateBoundsCollisionGroup();
-    console.log(this.game.camera)
     this.game.camera.follow(this.player);
 
     //send background to the back
@@ -381,8 +404,8 @@ export default {
     } else if (!this.player.customParams.isHooked && this.input.activePointer.leftButton.isDown && !this.ACTIVE_HOOK){
       this.ACTIVE_HOOK = true;
       this.fireHook()
-    } else if (this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp){
-      this.removeRope("full")
+    } else if (this.ROPE_RESET_TIMER + 100 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp){
+      this.removeRope()
     }
   }
 };
