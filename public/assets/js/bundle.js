@@ -673,10 +673,10 @@ PlatformMedium.prototype.constructor = PlatformMedium;
     if (this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked) {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
-    } else if (!this.player.customParams.isHooked && this.input.activePointer.leftButton.isDown && !this.ACTIVE_HOOK) {
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && !this.player.customParams.isHooked && this.input.activePointer.leftButton.isDown && !this.ACTIVE_HOOK) {
       this.ACTIVE_HOOK = true;
       this.fireHook();
-    } else if (this.ROPE_RESET_TIMER + 100 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp) {
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp) {
       this.removeRope();
     }
   }
