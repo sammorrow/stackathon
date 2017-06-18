@@ -2,6 +2,8 @@ import { enemyObj, platformObj } from '../prefabs/'
 import Phaser from 'phaser';
 import p2 from 'p2';
 
+import store from '../store.js'
+
 export default {
 
   //custom methods
@@ -197,7 +199,7 @@ export default {
     this.ropeTimer = 0;
     this.ropeLinks = [];
     this.anchors = [];
-
+    this.everyTen = 0;
 
     //initialize groups
     this.platformPool = this.add.group();
@@ -229,6 +231,13 @@ export default {
 
   update: function() {
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
+
+    this.everyTen++
+    //multi!
+    if(this.everyTen === 50){
+      store.dispatch({type: "GIVE_STATE", player: [this.player.world.x, this.player.world.y]});
+      this.everyTen = 0;
+  }
 
     //rope check
       if (this.currentHook){
