@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 export default {
   init: function() {
     //loading screen will have a white background
-    this.game.stage.backgroundColor = '#fff';
+    this.game.stage.backgroundColor = '#000';
     this.game.time.advancedTiming = true;
 
     //scaling options
@@ -16,6 +16,8 @@ export default {
     //physics system
     this.game.physics.startSystem(Phaser.Physics.P2JS);
     this.game.physics.p2.gravity.y = 1000;
+    this.game.physics.p2.setImpactEvents(true);
+    this.game.world.enableBodySleeping = true;
   },
   preload: function() {
     //assets we'll use in the loading screen

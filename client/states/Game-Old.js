@@ -33,6 +33,20 @@ export default {
 
   },
 
+  createObjects: function(objectName) {
+    // Create a group to hold the collision shapes
+    var objects = this.game.add.group();
+    objects.enableBody = true;
+    objects.physicsBodyType = Phaser.Physics.P2JS;
+    objects.createMultiple(40, objectName);
+
+    objects.forEach(function(child){
+        child.body.clearShapes();
+        child.body.loadPolygon('sprite_physics', objectName);
+    }, this);
+    return objects;
+  },
+
   update:  function(){
 
     let facing = 'left';

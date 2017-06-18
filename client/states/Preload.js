@@ -13,6 +13,9 @@ export default {
     //load game assets
     this.load.image('goal', 'assets/images/goal.png');
     this.load.image('slime', 'assets/images/slime.png');
+    this.load.image('rope', 'assets/images/rope-segment.png');
+    this.load.image('hook', 'assets/images/hook.png');
+    this.load.image('anchor', 'assets/images/hook.png');
 
     //platforms
     this.load.image('platform-medium', 'assets/images/platform-medium.png');
@@ -26,7 +29,8 @@ export default {
 
     //map
     this.load.image('gameTiles', 'assets/images/goodly-2x.png');
-    this.load.tilemap('level-one', 'assets/levels/level-three.json', null, Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('level-one', 'assets/levels/level-one.json', null, Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('level-two', 'assets/levels/level-four.json', null, Phaser.Tilemap.TILED_JSON);
 
     //scoreboard
     this.scoreLabel = this.game.add.text((this.game.world.centerX), 100, "0", {font: "100px Arial", fill: "#fff"});
@@ -38,6 +42,8 @@ export default {
 
   },
   create: function() {
-    this.state.start('Game');
+    this.timer = new Phaser.Timer(this.game);
+    this.timer.start();
+    this.state.start('Game', true, false, 'level-one');
   }
 };

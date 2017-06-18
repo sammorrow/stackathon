@@ -5,7 +5,7 @@ import gameObj from './states';
 
 let Platformer = {};
 
-Platformer.game = new Phaser.Game(620, 360, Phaser.AUTO);
+Platformer.game = new Phaser.Game(1000, 360, Phaser.AUTO, 'game');
 
 Platformer.game.state.add('Boot', gameObj.Boot);
 Platformer.game.state.add('Preload', gameObj.Preload);

@@ -10,18 +10,19 @@ let PlatformMedium = function(ctx, x, y, key) {
     ctx.terrainCollisionGroup,
     ctx.playerCollisionGroup,
     ctx.enemyCollisionGroup,
-    ctx.platformCollisionGroup
+    ctx.platformCollisionGroup,
+    ctx.hookCollisionGroup
     ]);
   this.body.collideWorldBounds = true;
   this.body.data.gravityScale = 0;
   this.body.kinematic = true;
   this.body.mass = 4;
   this.inputEnabled = true;
-  this.events.onInputDown.add(() => {
-    ctx.setRope(this, this.world.x, this.world.y)
-    // this.body.velocity.y = 10;
-    // setTimeout(fastFall.bind(this), 5000)
-  });
+  // this.events.onInputDown.add(() => {
+  //   ctx.setRope(this, this.world.x, this.world.y)
+  //   // this.body.velocity.y = 10;
+  //   // setTimeout(fastFall.bind(this), 5000)
+  // });
 
 }
 
