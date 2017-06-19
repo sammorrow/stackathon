@@ -2,7 +2,10 @@ import { enemyObj, platformObj } from '../prefabs/'
 import Phaser from 'phaser';
 import p2 from 'p2';
 
-import store from '../store.js'
+import store from '../store.js';
+import '../eventemitter';
+
+window.gameEmitter = new window.EventEmitter();
 
 export default {
 
@@ -29,15 +32,17 @@ export default {
   },
 
   fireHook: function(){
-    this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
-    this.ropeBitmapData.ctx.strokeStyle = "#f4a460"
-    this.ropeBitmapData.ctx.lineWidth = "6";
-    this.line = this.game.add.sprite(0, 0, this.ropeBitmapData)
+
+    // this.ropeBitmapData = this.game.add.bitmapData(this.game.world.width, this.game.world.height);
+    // this.ropeBitmapData.ctx.strokeStyle = "#f4a460"
+    // this.ropeBitmapData.ctx.lineWidth = "6";
+    // this.line = this.game.add.sprite(0, 0, this.ropeBitmapData)
 
     let hook = this.hookPool.getFirstExists(false)
     if (hook){
       hook.exists = true;
       hook.lifespan = 230;
+      hook.timer = Date.now();
       this.game.physics.p2.enable(hook)
       hook.body.data.gravityScale = 0;
       hook.body.setRectangle(5);
@@ -47,9 +52,11 @@ export default {
         this.terrainCollisionGroup
       ])
       hook.body.onBeginContact.add(body => {
-        if (body && body.sprite && body.sprite.key === "platform-medium"){
-          this.setRope(body.sprite)
-          hook.kill();
+        if (hook.timer + 20 < Date.now()){
+          if (body && body.sprite && body.sprite.key === "platform-medium"){
+            this.setRope(body.sprite)
+            hook.kill();
+          }
         }
       })
       hook.reset(this.player.world.x, this.player.world.y);
@@ -83,6 +90,8 @@ export default {
     this.player.customParams.isHooked = false;
     this.ACTIVE_HOOK = false;
     this.currentHook = null;
+    this.refreshGUI()
+
   },
 
   setRope: function(sprite){
@@ -95,7 +104,7 @@ export default {
     else sideLength = sprite.world.y - this.player.world.y;
     this.COSINE = Math.sin(sideLength / this.ROPE_LENGTH);
     this.removeRope()
-    this.createRope(sprite);
+    if(this.ROPE_LENGTH > 20) this.createRope(sprite);
   },
 
   createRope: function(anchorSprite) {
@@ -139,22 +148,23 @@ export default {
     this.game.physics.p2.createRevoluteConstraint(lastRect, [0, 0], this.player, [0, -20], this.MAX_FORCE)
     this.player.customParams.isHooked = true;
     this.ROPE_RESET_TIMER = Date.now();
+    this.refreshGUI()
   },
 
-  drawRope: function(hookSprite) {
-    let setDrawX = hookSprite.world.x, setDrawY = hookSprite.world.y;
-      if (this.ropeBitmapData){
-      // Change the bitmap data to reflect the new rope position
-      this.ropeBitmapData.clear();
-      this.ropeBitmapData.ctx.beginPath();
-      this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
-      this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
-      this.ropeBitmapData.ctx.lineWidth = 4;
-      this.ropeBitmapData.ctx.stroke();
-      this.ropeBitmapData.ctx.closePath();
-      this.ropeBitmapData.render();
-    }
-  },
+  // drawRope: function(hookSprite) {
+  //   let setDrawX = hookSprite.world.x, setDrawY = hookSprite.world.y;
+  //     if (this.ropeBitmapData){
+  //     // Change the bitmap data to reflect the new rope position
+  //     this.ropeBitmapData.clear();
+  //     this.ropeBitmapData.ctx.beginPath();
+  //     this.ropeBitmapData.ctx.moveTo(this.player.x, this.player.y);
+  //     this.ropeBitmapData.ctx.lineTo(setDrawX, setDrawY);
+  //     this.ropeBitmapData.ctx.lineWidth = 4;
+  //     this.ropeBitmapData.ctx.stroke();
+  //     this.ropeBitmapData.ctx.closePath();
+  //     this.ropeBitmapData.render();
+  //   }
+  // },
 
 
   restart: function(){
@@ -162,13 +172,15 @@ export default {
   },
 
   gameOver: function(){
+      window.currentDeaths++
       this.player.kill();
-      this.restart();
-  },
+      this.game.state.start('Preload', true, true, this.CURRENT_LEVEL)
+    },
 
   levelChange: function(){
-     if (this.goal.properties.nextLevel === "endScreen") this.game.state.start("End screen")
-     else this.game.state.start('Game', true, false, this.goal.properties.nextLevel)
+     if (this.goal.properties.nextLevel === "endScreen") this.game.state.start("End", false, false, this.ELAPSED, this.CURRENT_DEATHS, this.PLAYER_NAME)
+     else this.game.state.start('Preload', true, true, this.goal.properties.nextLevel)
+    // this.game.state.start("End", false, false, this.ELAPSED, this.CURRENT_DEATHS, this.PLAYER_NAME)
   },
 
 
@@ -179,8 +191,9 @@ export default {
   },
 
   init: function(currentLevel) {
+    this.CURRENT_DEATHS = window.currentDeaths;
     this.CURRENT_LEVEL = currentLevel ? currentLevel : 'level-one';
-
+    this.PLAYER_NAME = store.getState().localPlayerReducer.playerName || null;
     //constants
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
@@ -192,23 +205,26 @@ export default {
     this.ACTIVE_HOOK = false;
     this.ROPE_LENGTH = 100;
     this.ROPE_RESET_TIMER = 0;
-    this.SWINGING_SPEED = 300;
+    this.SWINGING_SPEED = 200;
 
-    this.MAX_FORCE = 10000;
+    this.MAX_FORCE = 7000;
+    this.ELAPSED = 0;
 
     this.ropeTimer = 0;
     this.ropeLinks = [];
     this.anchors = [];
     this.everyTen = 0;
+    this.ghostNameStyle = {font: '14px Arial', fill: '#fff'};
 
     //initialize groups
     this.platformPool = this.add.group();
     this.enemyPool = this.add.group();
+    this.textArray = [];
 
     //cursor keys to move the player
     this.cursors = this.game.input.keyboard.createCursorKeys();
   },
-  create: function() {
+  preload: function(){
 
     this.hookPool = this.game.add.group();
     this.hookPool.createMultiple(10, 'hook', 0, false);
@@ -216,14 +232,17 @@ export default {
     this.ropePool.createMultiple(150, 'rope', 0, false);
     this.anchorPool = this.game.add.group();
     this.anchorPool.createMultiple(10, 'anchor', 0, false);
+    this.platformPool = this.game.add.group();
+    this.platformPool.createMultiple(70, 'platform-medium', 0, false);
+    this.ghostPool = this.game.add.group();
+    this.ghostPool.createMultiple(100, 'player', 0, false);
+  },
 
-    enemyObj.Slime.prototype.update = function(){
-        this.body.velocity.x = -100;
-    }
+  create: function() {
 
     //load current level
     this.loadLevel();
-
+    this.initGUI();
     //show on-screen touch controls
     // this.createOnscreenControls();
   },
@@ -231,18 +250,58 @@ export default {
 
   update: function() {
     this.game.debug.text('FPS: ' + this.game.time.fps || '--', 20, 20);
-
     this.everyTen++
-    //multi!
-    if(this.everyTen === 50){
-      store.dispatch({type: "GIVE_STATE", player: [this.player.world.x, this.player.world.y]});
-      this.everyTen = 0;
-  }
+    if(!(this.everyTen % 10)){
+      this.ELAPSED = (this.game.time.now - window.startTime) / 1000
+      // new Date().getSeconds() - window.startTime.getSeconds()
+      this.refreshGUI();
+      //multi!
+      if (this.everyTen > 1000) this.everyTen = 0;
+      let payload = {};
+      payload[this.PLAYER_NAME] = {
+                                    position:  [this.player.x, this.player.y],
+                                    velocity:  [this.player.body.velocity.x, this.player.body.velocity.y],
+                                    currentLevel: this.CURRENT_LEVEL
+                                  };
+
+      window.gameEmitter.emit("sendPlayerPos", payload)
+      this.textArray.forEach(text => text.destroy())
+      this.textArray = [];
+      //store.dispatch({type: "GIVE_STATE", player: [this.player.body.x, this.player.body.y]});
+      let playersArr = store.getState().networkPlayersReducer.players;
+      let stateObj =  store.getState().networkPlayersReducer.playerLevelAndPositions;
+      playersArr.forEach(playerName => {
+        if (stateObj[playerName]){
+          if (playerName !== this.PLAYER_NAME && stateObj[playerName].currentLevel === this.CURRENT_LEVEL){
+            let ghost = this.ghostPool.getFirstExists(false)
+            if (ghost){
+              ghost.exists = true;
+              ghost.lifespan = 250;
+              ghost.reset(stateObj[playerName].position[0], stateObj[playerName].position[1])
+              ghost.anchor.setTo(0.5, 0.5)
+              let newText = this.game.add.text(0, 0, `${playerName}`, this.ghostNameStyle);
+              newText.alignTo(ghost, Phaser.TOP_CENTER);
+              this.textArray.push(newText)
+            //   this.game.physics.p2.enable(ghost);
+            //   ghost.body.setCollisionGroup(this.ghostCollisionGroup)
+            //   ghost.body.collides([
+            //     this.terrainCollisionGroup
+            //   ])
+            //   ghost.body.velocity.x = 0;
+            //   ghost.body.velocity.y = 0;
+            //   if (Math.abs(stateObj[playerName].velocity[0]) > 10) ghost.body.velocity.x = stateObj[playerName].velocity[0];
+            //   if (Math.abs(stateObj[playerName].velocity[1]) > 10) ghost.body.velocity.y = stateObj[playerName].velocity[1];
+            // }
+            }
+          }
+        }
+      });
+    }
 
     //rope check
-      if (this.currentHook){
-        this.drawRope(this.currentHook)
-      }
+      // if (this.currentHook){
+      //   this.drawRope(this.currentHook)
+      // }
     //speed checks
     if (this.player.body.velocity.x > this.MAX_SPEED){
       this.player.body.velocity.x = this.MAX_SPEED;
@@ -257,19 +316,7 @@ export default {
 
     if(this.touchingDown(this.player)) this.player.body.velocity.x = 0;
 
-    this.enemyPool.forEach(enemy => {
-      if(enemy.top >= this.world.height - 42){
-        enemy.kill()
-      }
-    });
-
-    this.platformPool.forEach(platform => {
-      if(platform.top >= this.world.height - 42){
-        platform.kill()
-      }
-    });
-
-    if(this.player.top >= this.world.height - 42){
+    if(this.player.position.y >= this.world.height - 42){
       this.gameOver()
     }
     this.playerInput();
@@ -292,7 +339,6 @@ export default {
     //collision layer should be collisionLayer
     this.map.setCollisionBetween(1, 160, true, 'collisionLayer');
 
-
     //create collision groups
     this.goalCollisionGroup = this.game.physics.p2.createCollisionGroup();
     this.hookCollisionGroup = this.game.physics.p2.createCollisionGroup();
@@ -301,6 +347,8 @@ export default {
     this.terrainCollisionGroup = this.game.physics.p2.createCollisionGroup();
     this.enemyCollisionGroup = this.game.physics.p2.createCollisionGroup();
     this.ropeCollisionGroup = this.game.physics.p2.createCollisionGroup();
+    this.ghostCollisionGroup = this.game.physics.p2.createCollisionGroup();
+
 
     this.tileObjects = this.game.physics.p2.convertTilemap(this.map, 'collisionLayer');
 
@@ -311,7 +359,7 @@ export default {
       tile.collides([
         this.playerCollisionGroup, this.platformCollisionGroup,
         this.enemyCollisionGroup, this.ropeCollisionGroup,
-        this.hookCollisionGroup
+        this.hookCollisionGroup, this.ghostCollisionGroup
         ]);
     })
     //resize the world to fit the layer
@@ -323,11 +371,11 @@ export default {
     // this.player.animations.add('walking', [0, 1], 6, true);
     this.game.physics.p2.enable(this.player);
     this.player.body.clearShapes();
-    this.player.body.loadPolygon('sprite_physics', 'betty');
+    this.player.body.loadPolygon('sprite_physics', 'stackie');
     // this.player.body.adjustCenterOfMass();
     this.player.body.setCollisionGroup(this.playerCollisionGroup);
     this.player.body.collides([
-      this.terrainCollisionGroup, this.platformCollisionGroup,
+      this.terrainCollisionGroup,
       this.enemyCollisionGroup, this.goalCollisionGroup
     ])
     this.player.customParams = {isHooked: false};
@@ -336,22 +384,28 @@ export default {
     //create platforms
     let platformArr = this.findObjectsByType('platform', this.map, 'Object Layer 1')
     platformArr.forEach(el => {
-      let platform = new platformObj.PlatformMedium(self, +el.x, +el.y, 'platform-medium')
-      this.game.add.existing(platform)
-      this.platformPool.add(platform)
-    });
-
-    this.platform = new platformObj.PlatformMedium(self, 100, 100, 'platform-medium')
-    this.game.add.existing(this.platform);
-    this.platformPool.add(this.platform);
+      let platform = this.platformPool.getFirstExists(false)
+        if (platform){
+          platform.exists = true;
+          platform.reset(el.x, el.y)
+            this.game.physics.p2.enable(platform);
+            platform.body.clearShapes()
+            platform.body.loadPolygon('sprite_physics', 'platform-medium');
+            platform.body.setCollisionGroup(this.platformCollisionGroup);
+            platform.body.collides([
+              this.hookCollisionGroup
+              ]);
+            platform.body.kinematic = true;
+        }
+     });
 
     //create enemies
-    let enemyArr = this.findObjectsByType('enemy', this.map, 'Object Layer 1')
-    enemyArr.forEach(el => {
-      let newFoe = new enemyObj.Slime(this, el.x, el.y, 'slime', 10)
-      this.game.add.existing(newFoe)
-      this.enemyPool.add(newFoe)
-    });
+    // let enemyArr = this.findObjectsByType('enemy', this.map, 'Object Layer 1')
+    // enemyArr.forEach(el => {
+    //   let newFoe = new enemyObj.Slime(this, el.x, el.y, 'slime', 10)
+    //   this.game.add.existing(newFoe)
+    //   this.enemyPool.add(newFoe)
+    // });
 
     //set goal
     this.goal = this.findObjectsByType('goal', this.map, 'Object Layer 1')[0];
@@ -365,7 +419,6 @@ export default {
     ])
     this.goalPost.body.onBeginContact.add(body => {
       if (body && body.sprite && body.sprite.key === "player"){
-          console.log(this.goal)
           this.levelChange()
         }
     })
@@ -416,6 +469,28 @@ export default {
     } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp){
       this.removeRope()
     }
+  },
+  initGUI: function(){
+    this.hookCooldownIcon = this.add.sprite(10, 500, 'hook');
+    this.hookCooldownIcon.fixedToCamera = true;
+    let style = {font: '14px Arial', fill: '#fff'};
+    this.hookCooldownLabel = this.add.text(30, 520, 'Hook ready!', style)
+    this.hookCooldownLabel.fixedToCamera = true;
+
+    this.gameTimer = this.add.text(20, 30, `Time Elapsed: 0 seconds`, style)
+    this.gameTimer.fixedToCamera = true;
+    this.deathCount = this.add.text(20, 45, `Current Deaths: ${this.CURRENT_DEATHS}`, style)
+    this.deathCount.fixedToCamera = true;
+  },
+
+
+//incomplete
+  refreshGUI: function(){
+    if (this.ROPE_RESET_TIMER + 500 > Date.now() || this.player.customParams.isHooked) this.hookCooldownLabel.text = "Not ready"
+    else this.hookCooldownLabel.text = "Ready!"
+    this.gameTimer.text = `Time Elapsed: ${this.ELAPSED} seconds`
+    this.deathCount.text = `Current Deaths: ${this.CURRENT_DEATHS}`
+
   }
 };
 

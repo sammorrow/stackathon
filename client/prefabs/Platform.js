@@ -8,7 +8,6 @@ let PlatformMedium = function(ctx, x, y, key) {
   this.body.setCollisionGroup(ctx.platformCollisionGroup);
   this.body.collides([
     ctx.terrainCollisionGroup,
-    ctx.playerCollisionGroup,
     ctx.enemyCollisionGroup,
     ctx.platformCollisionGroup,
     ctx.hookCollisionGroup

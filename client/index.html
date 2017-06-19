@@ -3,8 +3,10 @@
    <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width initial-scale=1.0'>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="socket.io/socket.io.js"></script>
     <script src="/assets/js/bundle.js" defer></script>
-    <title>Phaser</title>
+    <script src="@orange-games/phaser-input/build/phaser-input.js" defer></script>
+    <title>Super Hook Race!</title>
     <style>
       body {
         background-color: grey;
@@ -12,10 +14,13 @@
       #game{
         overflow: hidden;
       }
+      li {
+        font: 'Helvetica',
+        font-weight: bold
+      }
     </style>
 </head>
 
 <div id="game"></div>
-<div>
-  <p> Can you see me? </p>
-</div>
+<div id="leaderboard"></div>
+
