@@ -244,7 +244,7 @@ export default {
     this.loadLevel();
     this.initGUI();
     //show on-screen touch controls
-    // this.createOnscreenControls();
+    if(window.mobileOn) this.createOnscreenControls();
   },
 
 
@@ -463,10 +463,10 @@ export default {
     if ((this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked)){
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
-    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && !this.player.customParams.isHooked && this.input.activePointer.leftButton.isDown && !this.ACTIVE_HOOK){
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && !this.player.customParams.isHooked && this.input.activePointer.isDown && !this.ACTIVE_HOOK){
       this.ACTIVE_HOOK = true;
       this.fireHook()
-    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp){
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.isUp){
       this.removeRope()
     }
   },
@@ -491,9 +491,64 @@ export default {
     this.gameTimer.text = `Time Elapsed: ${this.ELAPSED} seconds`
     this.deathCount.text = `Current Deaths: ${this.CURRENT_DEATHS}`
 
+  },
+
+  createOnscreenControls: function(){
+    this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
+    this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
+    this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
+
+    this.leftArrow.alpha = 0.5;
+    this.rightArrow.alpha = 0.5;
+    this.actionButton.alpha = 0.5;
+
+    this.leftArrow.fixedToCamera = true;
+    this.rightArrow.fixedToCamera = true;
+    this.actionButton.fixedToCamera = true;
+
+    this.actionButton.events.onInputDown.add(function(){
+      this.player.customParams.mustJump = true;
+    }, this);
+
+    this.actionButton.events.onInputUp.add(function(){
+      this.player.customParams.mustJump = false;
+    }, this);
+
+    //left
+    this.leftArrow.events.onInputDown.add(function(){
+      this.player.customParams.isMovingLeft = true;
+    }, this);
+
+    this.leftArrow.events.onInputUp.add(function(){
+      this.player.customParams.isMovingLeft = false;
+    }, this);
+
+    this.leftArrow.events.onInputOver.add(function(){
+      this.player.customParams.isMovingLeft = true;
+    }, this);
+
+    this.leftArrow.events.onInputOut.add(function(){
+      this.player.customParams.isMovingLeft = false;
+    }, this);
+
+    //right
+    this.rightArrow.events.onInputDown.add(function(){
+      this.player.customParams.isMovingRight = true;
+    }, this);
+
+    this.rightArrow.events.onInputUp.add(function(){
+      this.player.customParams.isMovingRight = false;
+    }, this);
+
+    this.rightArrow.events.onInputOver.add(function(){
+      this.player.customParams.isMovingRight = true;
+    }, this);
+
+    this.rightArrow.events.onInputOut.add(function(){
+      this.player.customParams.isMovingRight = false;
+    }, this);
   }
 };
-
 
     // if ((this.cursors.up.isDown && this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) && (this.player.body.blocked.down || this.player.body.touching.down)){
     //   this.player.body.velocity.x = currentVelocity;
@@ -508,59 +563,3 @@ export default {
     //   this.ropeTimer = Date.now();
     //   this.ROPE_LENGTH -= 5;
     //   this.setRope();
-
-  // createOnscreenControls: function(){
-  //   this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
-  //   this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
-  //   this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
-
-  //   this.leftArrow.alpha = 0.5;
-  //   this.rightArrow.alpha = 0.5;
-  //   this.actionButton.alpha = 0.5;
-
-  //   this.leftArrow.fixedToCamera = true;
-  //   this.rightArrow.fixedToCamera = true;
-  //   this.actionButton.fixedToCamera = true;
-
-  //   this.actionButton.events.onInputDown.add(function(){
-  //     this.player.customParams.mustJump = true;
-  //   }, this);
-
-  //   this.actionButton.events.onInputUp.add(function(){
-  //     this.player.customParams.mustJump = false;
-  //   }, this);
-
-  //   //left
-  //   this.leftArrow.events.onInputDown.add(function(){
-  //     this.player.customParams.isMovingLeft = true;
-  //   }, this);
-
-  //   this.leftArrow.events.onInputUp.add(function(){
-  //     this.player.customParams.isMovingLeft = false;
-  //   }, this);
-
-  //   this.leftArrow.events.onInputOver.add(function(){
-  //     this.player.customParams.isMovingLeft = true;
-  //   }, this);
-
-  //   this.leftArrow.events.onInputOut.add(function(){
-  //     this.player.customParams.isMovingLeft = false;
-  //   }, this);
-
-  //   //right
-  //   this.rightArrow.events.onInputDown.add(function(){
-  //     this.player.customParams.isMovingRight = true;
-  //   }, this);
-
-  //   this.rightArrow.events.onInputUp.add(function(){
-  //     this.player.customParams.isMovingRight = false;
-  //   }, this);
-
-  //   this.rightArrow.events.onInputOver.add(function(){
-  //     this.player.customParams.isMovingRight = true;
-  //   }, this);
-
-  //   this.rightArrow.events.onInputOut.add(function(){
-  //     this.player.customParams.isMovingRight = false;
-  //   }, this);
-  // }

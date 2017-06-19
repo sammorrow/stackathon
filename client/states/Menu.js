@@ -33,7 +33,28 @@ export default {
     this.state.start('Preload', true, true, 'level-one');
   },
 
+  stackieClick: function(){
+    this.characterText.text = "Stackie is locked. Beat the secret level to unlock!"
+  },
+
+  bettyClick: function(){
+    this.characterText.text = "You have selected: Betty."
+  },
+
+  toggleMobile: function(){
+    window.mobileOn = !window.mobileOn
+    if (window.mobileOn) this.mobileModeIndicator.text = "Mobile mode is on.";
+    else this.mobileModeIndicator.text = "Mobile mode is off.";
+  },
+
+  toggleFullscreen: function(){
+    if (this.scale.scaleMode === Phaser.ScaleManager.NO_SCALE) this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    else this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+
+  },
+
   init: function(){
+    window.mobileOn = false;
     this.userName = ''
     this.characterName = 'Betty'
     this.errorMessage = ''
@@ -48,16 +69,30 @@ export default {
     });
     this.game.add.button(10, 110, 'submit', this.onSubmit, this, 0, 0, 0, 0);
 
+    this.game.add.button(700, 10, 'submit', this.toggleMobile, this, 0, 0, 0, 0);
+    this.mobileModeIndicator = this.game.add.text(700, 50, 'Mobile mode is off.', style)
+
+    this.game.add.button(700, 100, 'submit', this.toggleFullscreen, this, 0, 0, 0, 0);
+    this.game.add.text(700, 150, 'Toggle fullscreen.', style)
+
+
     this.nameText = this.game.add.text(10, 150, `Your name is: ${this.userName}`, style);
     this.errorDisplay = this.game.add.text(10, 170, ``, errorStyle)
 
     this.game.add.text(10, 70, 'Enter a unique name:', style)
     this.game.add.text(10, 200, 'Choose a character:', style)
-    this.game.add.sprite(10, 230, 'player')
-    this.game.add.sprite(80, 230, 'stackie')
-    this.characterText = this.game.add.text(10, 310, `Your character is: ${this.characterName}`, style);
+    this.betty = this.game.add.sprite(10, 230, 'player')
+    this.stackie = this.game.add.sprite(80, 230, 'stackie')
+    this.characterText = this.game.add.text(10, 310, `You have selected: ${this.characterName}`, style);
+    this.stackie.inputEnabled = true;
+    this.stackie.events.onInputDown.add(this.stackieClick, this);
+    this.betty.inputEnabled = true;
+    this.betty.events.onInputDown.add(this.bettyClick, this);
 
     this.game.add.text(300, 30, 'SUPER HOOK RACING', bigTextStyle )
+
+    this.game.add.text(200, 150, `Rules: Get to the finish!\nArrow keys to move, mouse down to launch a hook, mouse up to release.\nYou can swing while on the hook with the arrow keys as well.`, style)
+
 
   },
   update: function(){

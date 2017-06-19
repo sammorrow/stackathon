@@ -4,12 +4,14 @@ const express = require('express');
 const volleyball = require('volleyball');
 const path = require('path');
 const store = require('./store');
+const Leaderboard = require('./db').Leaderboard
 
 const app = express();
 
 var server = app.listen(3000, function () {
   console.log('Server listening on port', 3000);
 });
+
 
 var io = socketio(server);
 

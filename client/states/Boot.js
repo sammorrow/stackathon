@@ -8,7 +8,7 @@ export default {
     this.game.time.advancedTiming = true;
 
     //scaling options
-    //this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    // this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
     //have the game centered horizontally
     this.scale.pageAlignHorizontally = true;

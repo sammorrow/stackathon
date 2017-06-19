@@ -1534,11 +1534,7 @@ let vm = new __WEBPACK_IMPORTED_MODULE_1_vue__["a" /* default */]({
     leaderboardData: []
   },
   render(h) {
-    return h('div', {
-      'class': {
-        'is-red': this.isRed
-      }
-    }, [h('hr'), h('h1', 'LEADERBOARDS'), h('ol', this.leaderboardData.map(player => h('li', `${player.name} TIME: ${player.time} DEATHS: ${player.deaths}`)))]);
+    return h('div', {}, [h('hr'), h('h1', 'LEADERBOARDS'), h('ol', this.leaderboardData.map(player => h('li', `${player.name} ||| TIME: ${player.time} ||| DEATHS: ${player.deaths}`)))]);
   },
   created: function () {
     __WEBPACK_IMPORTED_MODULE_0_axios___default.a.get('/leaderboard').then(res => res.data).then(leaderboard => {
@@ -2652,7 +2648,7 @@ const reducer = (state = initialState, action) => {
     this.game.time.advancedTiming = true;
 
     //scaling options
-    //this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    // this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     this.scale.scaleMode = __WEBPACK_IMPORTED_MODULE_0_phaser___default.a.ScaleManager.NO_SCALE;
     //have the game centered horizontally
     this.scale.pageAlignHorizontally = true;
@@ -2945,7 +2941,7 @@ window.gameEmitter = new window.EventEmitter();
     this.loadLevel();
     this.initGUI();
     //show on-screen touch controls
-    // this.createOnscreenControls();
+    if (window.mobileOn) this.createOnscreenControls();
   },
 
   update: function () {
@@ -3151,10 +3147,10 @@ window.gameEmitter = new window.EventEmitter();
     if (this.cursors.up.isDown && this.touchingDown(this.player) && !this.player.customParams.isHooked) {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
-    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && !this.player.customParams.isHooked && this.input.activePointer.leftButton.isDown && !this.ACTIVE_HOOK) {
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && !this.player.customParams.isHooked && this.input.activePointer.isDown && !this.ACTIVE_HOOK) {
       this.ACTIVE_HOOK = true;
       this.fireHook();
-    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.leftButton.isUp) {
+    } else if (this.ROPE_RESET_TIMER + 200 < Date.now() && this.player.customParams.isHooked && this.input.activePointer.isUp) {
       this.removeRope();
     }
   },
@@ -3176,6 +3172,62 @@ window.gameEmitter = new window.EventEmitter();
     if (this.ROPE_RESET_TIMER + 500 > Date.now() || this.player.customParams.isHooked) this.hookCooldownLabel.text = "Not ready";else this.hookCooldownLabel.text = "Ready!";
     this.gameTimer.text = `Time Elapsed: ${this.ELAPSED} seconds`;
     this.deathCount.text = `Current Deaths: ${this.CURRENT_DEATHS}`;
+  },
+
+  createOnscreenControls: function () {
+    this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
+    this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
+    this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
+
+    this.leftArrow.alpha = 0.5;
+    this.rightArrow.alpha = 0.5;
+    this.actionButton.alpha = 0.5;
+
+    this.leftArrow.fixedToCamera = true;
+    this.rightArrow.fixedToCamera = true;
+    this.actionButton.fixedToCamera = true;
+
+    this.actionButton.events.onInputDown.add(function () {
+      this.player.customParams.mustJump = true;
+    }, this);
+
+    this.actionButton.events.onInputUp.add(function () {
+      this.player.customParams.mustJump = false;
+    }, this);
+
+    //left
+    this.leftArrow.events.onInputDown.add(function () {
+      this.player.customParams.isMovingLeft = true;
+    }, this);
+
+    this.leftArrow.events.onInputUp.add(function () {
+      this.player.customParams.isMovingLeft = false;
+    }, this);
+
+    this.leftArrow.events.onInputOver.add(function () {
+      this.player.customParams.isMovingLeft = true;
+    }, this);
+
+    this.leftArrow.events.onInputOut.add(function () {
+      this.player.customParams.isMovingLeft = false;
+    }, this);
+
+    //right
+    this.rightArrow.events.onInputDown.add(function () {
+      this.player.customParams.isMovingRight = true;
+    }, this);
+
+    this.rightArrow.events.onInputUp.add(function () {
+      this.player.customParams.isMovingRight = false;
+    }, this);
+
+    this.rightArrow.events.onInputOver.add(function () {
+      this.player.customParams.isMovingRight = true;
+    }, this);
+
+    this.rightArrow.events.onInputOut.add(function () {
+      this.player.customParams.isMovingRight = false;
+    }, this);
   }
 });
 
@@ -3192,62 +3244,6 @@ window.gameEmitter = new window.EventEmitter();
 //   this.ropeTimer = Date.now();
 //   this.ROPE_LENGTH -= 5;
 //   this.setRope();
-
-// createOnscreenControls: function(){
-//   this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
-//   this.rightArrow = this.add.button(110, this.game.height - 60, 'arrowButton');
-//   this.actionButton = this.add.button(this.game.width - 100, this.game.height - 60, 'actionButton');
-
-//   this.leftArrow.alpha = 0.5;
-//   this.rightArrow.alpha = 0.5;
-//   this.actionButton.alpha = 0.5;
-
-//   this.leftArrow.fixedToCamera = true;
-//   this.rightArrow.fixedToCamera = true;
-//   this.actionButton.fixedToCamera = true;
-
-//   this.actionButton.events.onInputDown.add(function(){
-//     this.player.customParams.mustJump = true;
-//   }, this);
-
-//   this.actionButton.events.onInputUp.add(function(){
-//     this.player.customParams.mustJump = false;
-//   }, this);
-
-//   //left
-//   this.leftArrow.events.onInputDown.add(function(){
-//     this.player.customParams.isMovingLeft = true;
-//   }, this);
-
-//   this.leftArrow.events.onInputUp.add(function(){
-//     this.player.customParams.isMovingLeft = false;
-//   }, this);
-
-//   this.leftArrow.events.onInputOver.add(function(){
-//     this.player.customParams.isMovingLeft = true;
-//   }, this);
-
-//   this.leftArrow.events.onInputOut.add(function(){
-//     this.player.customParams.isMovingLeft = false;
-//   }, this);
-
-//   //right
-//   this.rightArrow.events.onInputDown.add(function(){
-//     this.player.customParams.isMovingRight = true;
-//   }, this);
-
-//   this.rightArrow.events.onInputUp.add(function(){
-//     this.player.customParams.isMovingRight = false;
-//   }, this);
-
-//   this.rightArrow.events.onInputOver.add(function(){
-//     this.player.customParams.isMovingRight = true;
-//   }, this);
-
-//   this.rightArrow.events.onInputOut.add(function(){
-//     this.player.customParams.isMovingRight = false;
-//   }, this);
-// }
 
 /***/ }),
 /* 51 */
@@ -3294,7 +3290,25 @@ let bigTextStyle = { font: '30px bold Arial', fill: '#fff' };
     this.state.start('Preload', true, true, 'level-one');
   },
 
+  stackieClick: function () {
+    this.characterText.text = "Stackie is locked. Beat the secret level to unlock!";
+  },
+
+  bettyClick: function () {
+    this.characterText.text = "You have selected: Betty.";
+  },
+
+  toggleMobile: function () {
+    window.mobileOn = !window.mobileOn;
+    if (window.mobileOn) this.mobileModeIndicator.text = "Mobile mode is on.";else this.mobileModeIndicator.text = "Mobile mode is off.";
+  },
+
+  toggleFullscreen: function () {
+    if (this.scale.scaleMode === __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.ScaleManager.NO_SCALE) this.scale.scaleMode = __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.ScaleManager.SHOW_ALL;else this.scale.scaleMode = __WEBPACK_IMPORTED_MODULE_1_phaser___default.a.ScaleManager.NO_SCALE;
+  },
+
   init: function () {
+    window.mobileOn = false;
     this.userName = '';
     this.characterName = 'Betty';
     this.errorMessage = '';
@@ -3309,16 +3323,28 @@ let bigTextStyle = { font: '30px bold Arial', fill: '#fff' };
     });
     this.game.add.button(10, 110, 'submit', this.onSubmit, this, 0, 0, 0, 0);
 
+    this.game.add.button(700, 10, 'submit', this.toggleMobile, this, 0, 0, 0, 0);
+    this.mobileModeIndicator = this.game.add.text(700, 50, 'Mobile mode is off.', style);
+
+    this.game.add.button(700, 100, 'submit', this.toggleFullscreen, this, 0, 0, 0, 0);
+    this.game.add.text(700, 150, 'Toggle fullscreen.', style);
+
     this.nameText = this.game.add.text(10, 150, `Your name is: ${this.userName}`, style);
     this.errorDisplay = this.game.add.text(10, 170, ``, errorStyle);
 
     this.game.add.text(10, 70, 'Enter a unique name:', style);
     this.game.add.text(10, 200, 'Choose a character:', style);
-    this.game.add.sprite(10, 230, 'player');
-    this.game.add.sprite(80, 230, 'stackie');
-    this.characterText = this.game.add.text(10, 310, `Your character is: ${this.characterName}`, style);
+    this.betty = this.game.add.sprite(10, 230, 'player');
+    this.stackie = this.game.add.sprite(80, 230, 'stackie');
+    this.characterText = this.game.add.text(10, 310, `You have selected: ${this.characterName}`, style);
+    this.stackie.inputEnabled = true;
+    this.stackie.events.onInputDown.add(this.stackieClick, this);
+    this.betty.inputEnabled = true;
+    this.betty.events.onInputDown.add(this.bettyClick, this);
 
     this.game.add.text(300, 30, 'SUPER HOOK RACING', bigTextStyle);
+
+    this.game.add.text(200, 150, `Rules: Get to the finish!\nArrow keys to move, mouse down to launch a hook, mouse up to release.\nYou can swing while on the hook with the arrow keys as well.`, style);
   },
   update: function () {
     if (this.userName && !this.TIME_TO_GO) {

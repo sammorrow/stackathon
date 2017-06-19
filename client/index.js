@@ -8,13 +8,10 @@ let vm = new Vue({
   },
   render(h) {
     return h('div', {
-      'class': {
-        'is-red': this.isRed
-      }
     }, [
       h('hr'),
       h('h1', 'LEADERBOARDS'),
-      h('ol', this.leaderboardData.map(player => h('li', `${player.name} TIME: ${player.time} DEATHS: ${player.deaths}`)))
+      h('ol', this.leaderboardData.map(player => h('li', `${player.name} ||| TIME: ${player.time} ||| DEATHS: ${player.deaths}`)))
     ])
   },
   created: function(){
