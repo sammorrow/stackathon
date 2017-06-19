@@ -4,7 +4,6 @@ const express = require('express');
 const volleyball = require('volleyball');
 const path = require('path');
 const store = require('./store');
-const Leaderboard = require('./db').Leaderboard
 
 const app = express();
 
@@ -48,6 +47,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')))
 app.use(express.static(path.join(__dirname, '..', 'node_modules')))
 
 app.use(express.static(__dirname));
+
+app.get("/", (req, res, next) => {
+  res.sendFile("/home/sam/stackathon/client/index.html")
+})
 
 app.get("*", (req, res, next) => {
   res.sendFile("/home/sam/stackathon/client/index.html")

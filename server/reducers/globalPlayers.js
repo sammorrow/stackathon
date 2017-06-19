@@ -1,4 +1,3 @@
-const Leaderboard = require('../db').Leaderboard
 
 const initialState = {  players: [],
                         playerLevelsAndPositions: {},
@@ -31,11 +30,7 @@ const reducer = (state = initialState, action) => {
             } else if (position) {
                 leaderboardArr = state.leaderboard.slice(1, position).concat(action.score).concat(state.leaderboard.slice(position, state.leaderboard.length))
             }
-            // Leaderboard.findbyId(position)
-            // .then(entryToChange => {
-            //  entryToChange = action.score;
-            //  return entryToChange.save()
-            // })
+
             position = 0;
             state.leaderboard = leaderboardArr;
             return state
